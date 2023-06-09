@@ -1,5 +1,8 @@
 ADAPTIVE_LASSO_MAXSAMPLES <- 20
 
+#' An S4 class to store raw data, intermediate data and outcomes of BARTsc analysis
+#' 
+#' @slot meta, param, data, Args, intermediate, result
 setClass("Bart",
     slots = c(
         meta = "list",
@@ -18,6 +21,27 @@ setClass("Bart",
     )
 )
 
+#' helper of Bart class
+#'
+#' This function creates a Bart object with specified data.
+#'
+#' @param name name of the input data, it could be a sample name, a cluster id and so on
+#' @param genome "mm10" or "hg38"
+#' @param gene_data a vector of gene symbols, check the internal data B_cell_gene as an example
+#' @param region_data a dataframe that follows a BED6 format, check the internal data B_cell_region as an example
+#' @param gene_mode_param a list of costumized arguments for gene mode
+#' @param region_mode_param a list of costumized arguments for region mode
+#'
+#' @return A Bart object
+#'
+#' @export
+#'
+#' @examples
+#' bart_obj <- Bart("B_cell_gene", "hg38", gene_data = B_cell_gene)
+#' bart_obj <- Bart("B_cell_region", "hg38", region_data = B_cell_region)
+#' bart_obj <- Bart("B_cell_gene", "hg38",
+#'                  gene_data = B_cell_gene,
+#'                  region_data = B_cell_region)          
 Bart <- function(name, genome, gene_data = NULL, region_data = NULL,
                  gene_mode_param = list(binsize = 1000),
                  region_mode_param = list(
@@ -43,17 +67,25 @@ Bart <- function(name, genome, gene_data = NULL, region_data = NULL,
     return(bart_obj)
 }
 
-setGeneric("generateArgs", function(x, subcommand) standardGeneric("generateArgs"))
+#' Create a Args Namespace
+#' 
+#' This function create a python Namespace that holds BART2 arguments.
+#' 
+#' @param object a Bart object
+#' @param subcommand "geneset" or "region"
+#' 
+#' @return a python Namespace
+setGeneric("generateArgs", function(object, subcommand) standardGeneric("generateArgs"))
 
-setMethod("generateArgs", "Bart", function(x, subcommand) {
+setMethod("generateArgs", "Bart", function(object, subcommand) {
     # to do: add the bimodal option
     if (subcommand == "geneset") {
         args <- types$SimpleNamespace(
             subcommand_name = "geneset",
-            ofilename = x@meta$name,
-            species = x@meta$genome,
-            binsize = as.integer(x@param[["gene_mode_param"]][["binsize"]]),
-            genelist = x@data[["input_genes"]],
+            ofilename = object@meta$name,
+            species = object@meta$genome,
+            binsize = as.integer(object@param[["gene_mode_param"]][["binsize"]]),
+            genelist = object@data[["input_genes"]],
             refseq = FALSE, # ignore
             target = NULL, # ignore
             nonorm = FALSE, # ignore
@@ -63,11 +95,11 @@ setMethod("generateArgs", "Bart", function(x, subcommand) {
     } else if (subcommand == "region") {
         args <- types$SimpleNamespace(
             subcommand_name = "region",
-            ofilename = x@meta$name,
-            species = x@meta$genome,
-            binsize = as.integer(x@param[["region_mode_param"]][["binsize"]]),
-            scorecol = as.integer(x@param[["region_mode_param"]][["scorecol"]]),
-            in_df = x@data[["input_regions"]],
+            ofilename = object@meta$name,
+            species = object@meta$genome,
+            binsize = as.integer(object@param[["region_mode_param"]][["binsize"]]),
+            scorecol = as.integer(object@param[["region_mode_param"]][["scorecol"]]),
+            in_df = object@data[["input_regions"]],
             refseq = FALSE, # ignore
             target = NULL, # ignore
             nonorm = FALSE, # ignore
@@ -78,10 +110,10 @@ setMethod("generateArgs", "Bart", function(x, subcommand) {
     return(args)
 })
 
-setGeneric("runMarge", function(x, samples) standardGeneric("runMarge"))
+setGeneric("runMarge", function(object, samples) standardGeneric("runMarge"))
 
-setMethod("runMarge", "Bart", function(x, samples) {
-    args <- x@Args[["gene_mode_args"]]
+setMethod("runMarge", "Bart", function(object, samples) {
+    args <- object@Args[["gene_mode_args"]]
     rp_args <- types$SimpleNamespace(
         genome = args$species,
         histRP = args$rp,
@@ -96,16 +128,16 @@ setMethod("runMarge", "Bart", function(x, samples) {
     marge_res <- RPRegress$main(rp_args, samples)
     names(marge_res) <- c("H3K27ac_selected", "coef")
 
-    x@intermediate[["Marge_based"]][["Marge_model"]] <- marge_res
-    return(x)
+    object@intermediate[["Marge_based"]][["Marge_model"]] <- marge_res
+    return(object)
 })
 
-setGeneric("identifyEnhancer", function(x) standardGeneric("identifyEnhancer"))
+setGeneric("identifyEnhancer", function(object) standardGeneric("identifyEnhancer"))
 
-setMethod("identifyEnhancer", "Bart", function(x) {
-    args <- x@Args[["gene_mode_args"]]
+setMethod("identifyEnhancer", "Bart", function(object) {
+    args <- object@Args[["gene_mode_args"]]
     enhancer_args <- types$SimpleNamespace(
-        sample_df = x@intermediate[["Marge_based"]][["Marge_model"]][["H3K27ac_selected"]],
+        sample_df = object@intermediate[["Marge_based"]][["Marge_model"]][["H3K27ac_selected"]],
         name = args$ofilename,
         k27achdf5 = args$rpkm
     )
@@ -119,18 +151,18 @@ setMethod("identifyEnhancer", "Bart", function(x) {
         names()
 
     # predicted_enhancers is the 'counting' variable in bart2
-    x@intermediate[["Marge_based"]][["predicted_enhancers"]] <- EI_res[[1]]
-    x@intermediate[["Marge_based"]][["predicted_enhancers_rank"]] <- positions
+    object@intermediate[["Marge_based"]][["predicted_enhancers"]] <- EI_res[[1]]
+    object@intermediate[["Marge_based"]][["predicted_enhancers_rank"]] <- positions
 
     # predicted_enhancers_df is for user to check
-    # x@intermediate[["Marge_based"]][["predicted_enhancers_df"]] <- EI_res[[2]]
-    return(x)
+    # object@intermediate[["Marge_based"]][["predicted_enhancers_df"]] <- EI_res[[2]]
+    return(object)
 })
 
-setGeneric("mapRegionScore", function(x) standardGeneric("mapRegionScore"))
+setGeneric("mapRegionScore", function(object) standardGeneric("mapRegionScore"))
 
-setMethod("mapRegionScore", "Bart", function(x) {
-    args <- x@Args[["region_mode_args"]]
+setMethod("mapRegionScore", "Bart", function(object) {
+    args <- object@Args[["region_mode_args"]]
     counting <- score_on_UDHS$score_on_DHS(args)
     # get sorted UDHS ids
     positions <- counting %>%
@@ -138,23 +170,23 @@ setMethod("mapRegionScore", "Bart", function(x) {
         sort(decreasing = TRUE) %>%
         names()
 
-    x@intermediate[["region_based"]][["overlapped_enhancers"]] <- counting
-    x@intermediate[["region_based"]][["overlapped_enhancers_rank"]] <- positions
+    object@intermediate[["region_based"]][["overlapped_enhancers"]] <- counting
+    object@intermediate[["region_based"]][["overlapped_enhancers_rank"]] <- positions
 
-    return(x)
+    return(object)
 })
 
-setGeneric("combineModalities", function(x) standardGeneric("combineModalities"))
+setGeneric("combineModalities", function(object) standardGeneric("combineModalities"))
 
-setMethod("combineModalities", "Bart", function(x) {
-    gene_score_li <- x@intermediate[["Marge_based"]][["predicted_enhancers"]]
+setMethod("combineModalities", "Bart", function(object) {
+    gene_score_li <- object@intermediate[["Marge_based"]][["predicted_enhancers"]]
     gene_score_df <- data.frame(
         ID = as.integer(names(gene_score_li)),
         gene_score = as.numeric(unname(unlist(gene_score_li)))
     ) %>%
         dplyr::arrange(., ID)
 
-    region_score_li <- x@intermediate[["region_based"]][["overlapped_enhancers"]]
+    region_score_li <- object@intermediate[["region_based"]][["overlapped_enhancers"]]
     region_score_df <- data.frame(
         ID = as.integer(names(region_score_li)),
         region_score = as.numeric(unname(unlist(region_score_li)))
@@ -182,47 +214,47 @@ setMethod("combineModalities", "Bart", function(x) {
         sort(decreasing = TRUE) %>%
         names()
 
-    x@intermediate[["bimodal"]][["combined_enhancers"]] <- counting
-    x@intermediate[["bimodal"]][["combined_enhancers_rank"]] <- positions
+    object@intermediate[["bimodal"]][["combined_enhancers"]] <- counting
+    object@intermediate[["bimodal"]][["combined_enhancers_rank"]] <- positions
 
-    return(x)
+    return(object)
 })
 
 
 setGeneric(
     "predictTF",
-    function(x, mode) standardGeneric("predictTF")
+    function(object, mode) standardGeneric("predictTF")
 )
 
-setMethod("predictTF", "Bart", function(x, mode) {
+setMethod("predictTF", "Bart", function(object, mode) {
     if (mode == "geneset") {
         INT <- "Marge_based"
         counting <- "predicted_enhancers"
         positions <- "predicted_enhancers_rank"
-        args <- x@Args[["gene_mode_args"]]
+        args <- object@Args[["gene_mode_args"]]
     } else if (mode == "region") {
         INT <- "region_based"
         counting <- "overlapped_enhancers"
         positions <- "overlapped_enhancers_rank"
-        args <- x@Args[["region_mode_args"]]
+        args <- object@Args[["region_mode_args"]]
     } else if (mode == "bimodal") {
         INT <- "bimodal"
         counting <- "combined_enhancers"
         positions <- "combined_enhancers_rank"
-        args <- x@Args[["gene_mode_args"]] # temporarily share args with gene mode
+        args <- object@Args[["gene_mode_args"]] # temporarily share args with gene mode
     } else {
         stop("wrong mode")
     }
     # find tied intervals
     tied_list <-
         main$find_tied_intervals(
-            x@intermediate[[INT]][[counting]],
-            x@intermediate[[INT]][[positions]]
+            object@intermediate[[INT]][[counting]],
+            object@intermediate[[INT]][[positions]]
         )
 
     # calculate auc
     auc <-
-        AUCcalc$cal_auc(args, x@intermediate[[INT]][[positions]], tied_list)
+        AUCcalc$cal_auc(args, object@intermediate[[INT]][[positions]], tied_list)
     auc_df <- data.frame(ChIP_seq = unlist(auc[[2]]), AUC = unlist(auc[[1]]))
 
     # final stats
@@ -237,9 +269,9 @@ setMethod("predictTF", "Bart", function(x, mode) {
         "max_auc", "rank_avg_z_p_a", "rank_avg_z_p_a_irwinhall_pvalue"
     )]
 
-    x@intermediate[[INT]][["tied_list"]] <- tied_list
-    x@result[[mode]][["auc"]] <- auc_df
-    x@result[[mode]][["stats"]] <- stat_res_df
+    object@intermediate[[INT]][["tied_list"]] <- tied_list
+    object@result[[mode]][["auc"]] <- auc_df
+    object@result[[mode]][["stats"]] <- stat_res_df
 
-    return(x)
+    return(object)
 })

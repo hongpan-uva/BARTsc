@@ -46,13 +46,13 @@ setMethod("str", "Bart", function(object) {
 })
 
 
-setGeneric("getResult", function(x, subcommand) standardGeneric("getResult"))
+setGeneric("getResult", function(object, subcommand) standardGeneric("getResult"))
 
-setMethod("getResult", "Bart", function(x, subcommand) {
+setMethod("getResult", "Bart", function(object, subcommand) {
     if (subcommand == "geneset") {
-        result <- x@result$geneset$stats
+        result <- object@result$geneset$stats
     } else if (subcommand == "region") {
-        result <- x@result$region$stats
+        result <- object@result$region$stats
     }
 
     result[, 2] <- round(result[, 2], 2)

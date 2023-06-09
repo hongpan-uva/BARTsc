@@ -29,7 +29,6 @@
 #'
 #' @return no return
 #'
-#' @import
 #' @export
 #'
 load_bart2 <- function(
@@ -54,7 +53,6 @@ load_bart2 <- function(
 #'
 #' @return no return
 #'
-#' @import
 #' @export
 #'
 #' @examples
@@ -111,7 +109,6 @@ install_bart2 <- function(
 #'
 #' @return path where library date is stored
 #'
-#' @import
 #' @export
 #'
 #' @examples
@@ -168,7 +165,6 @@ get_library <- function(lib_dir) {
 #'
 #' @export
 #'
-#' @examples
 initiate <- function(
     condaenv = NULL,
     virtualenv = NULL) {
