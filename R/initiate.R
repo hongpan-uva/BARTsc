@@ -80,7 +80,7 @@ install_bart2 <- function(
     system2(
         command = "wget",
         args = c(
-            "https://github.com/hongpan-uva/bart2/tarball/master",
+            "https://github.com/hongpan-uva/bart2/tarball/use_in_r",
             "-O", "bart2_python.tgz"
         ),
         stdout = TRUE
@@ -107,7 +107,7 @@ install_bart2 <- function(
 #'
 #' @param lib_dir path to store library data
 #'
-#' @return path where library date is stored
+#' @return path where the library date is stored
 #'
 #' @export
 #'
@@ -181,10 +181,9 @@ initiate <- function(
     } else if (answer1) {
         message("Installation started...")
 
-        # lib_full_dir <- readline("Specify the path to store data library (skip to store under scbart R package directory): ") %>% get_library() # nolint: line_length_linter.
-        # print(paste("library:", lib_full_dir))
-
-        lib_full_dir <- "/project/zanglab_project/hz9fq/annotations/bart_library"
+        # lib_full_dir <- "/project/zanglab_project/hz9fq/annotations/bart_library"
+        lib_full_dir <- readline("Specify the path to store data library 13.3GB (skip to store under scbart R package directory): ") %>% get_library() # nolint: line_length_linter.
+        print(paste("library: ", lib_full_dir))
 
         readline("Specify the path to install bart2 (skip to install under scbart R package directory): ") %>% install_bart2(., lib = lib_full_dir)
     }
