@@ -126,6 +126,10 @@ get_library <- function(lib_dir) {
 
     setwd(lib_dir)
 
+    if ("bart2_library" %in% list.files()) {
+        return(paste0(lib_dir, "/bart2_library"))
+    }
+
     system("mkdir bart2_library")
 
     setwd("bart2_library")
@@ -138,6 +142,8 @@ get_library <- function(lib_dir) {
 
     system("tar zxf hg38_library.tar.gz")
 
+    system("rm hg38_library.tar.gz")
+
     system2(
         command = "wget",
         args = c("https://virginia.box.com/shared/static/bxdggnhp4bjz2l5h2zjlisnzp0ac7axf.gz", "-O", "mm10_library.tar.gz"), # nolint: line_length_linter.
@@ -145,6 +151,8 @@ get_library <- function(lib_dir) {
     )
 
     system("tar zxf mm10_library.tar.gz")
+
+    system("rm mm10_library.tar.gz")
 
     setwd(work_dir)
 

@@ -1,4 +1,4 @@
-Package: scbart
+Package: BARTsc
 Title: What the Package Does (One Line, Title Case)
 Version: 0.0.0.9000
 Authors@R: 
@@ -17,7 +17,8 @@ Imports:
     dplyr,
     magrittr,
     reticulate,
-    stats
+    stats,
+    RobustRankAggreg
 Depends: 
     R (>= 2.10)
 LazyData: true

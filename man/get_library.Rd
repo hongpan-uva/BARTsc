@@ -10,7 +10,7 @@ get_library(lib_dir)
 \item{lib_dir}{path to store library data}
 }
 \value{
-path where library date is stored
+path where the library date is stored
 }
 \description{
 Download bart2 library
