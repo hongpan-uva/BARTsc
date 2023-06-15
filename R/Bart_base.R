@@ -1,7 +1,7 @@
 ADAPTIVE_LASSO_MAXSAMPLES <- 20
 
 #' An S4 class to store raw data, intermediate data and outcomes of BARTsc analysis
-#' 
+#'
 #' @slot meta, param, data, Args, intermediate, result
 setClass("Bart",
     slots = c(
@@ -40,8 +40,9 @@ setClass("Bart",
 #' bart_obj <- Bart("B_cell_gene", "hg38", gene_data = B_cell_gene)
 #' bart_obj <- Bart("B_cell_region", "hg38", region_data = B_cell_region)
 #' bart_obj <- Bart("B_cell_gene", "hg38",
-#'                  gene_data = B_cell_gene,
-#'                  region_data = B_cell_region)          
+#'     gene_data = B_cell_gene,
+#'     region_data = B_cell_region
+#' )
 Bart <- function(name, genome, gene_data = NULL, region_data = NULL,
                  gene_mode_param = list(binsize = 1000),
                  region_mode_param = list(
@@ -68,12 +69,12 @@ Bart <- function(name, genome, gene_data = NULL, region_data = NULL,
 }
 
 #' Create a Args Namespace
-#' 
+#'
 #' This function create a python Namespace that holds BART2 arguments.
-#' 
+#'
 #' @param object a Bart object
 #' @param subcommand "geneset" or "region"
-#' 
+#'
 #' @return a python Namespace
 setGeneric("generateArgs", function(object, subcommand) standardGeneric("generateArgs"))
 
@@ -110,9 +111,9 @@ setMethod("generateArgs", "Bart", function(object, subcommand) {
     return(args)
 })
 
-setGeneric("runMarge", function(object, samples) standardGeneric("runMarge"))
+setGeneric("runMarge", function(object) standardGeneric("runMarge"))
 
-setMethod("runMarge", "Bart", function(object, samples) {
+setMethod("runMarge", "Bart", function(object) {
     args <- object@Args[["gene_mode_args"]]
     rp_args <- types$SimpleNamespace(
         genome = args$species,
@@ -125,7 +126,7 @@ setMethod("runMarge", "Bart", function(object, samples) {
         exptype = "Gene_Only",
         annotation = args$desc
     )
-    marge_res <- RPRegress$main(rp_args, samples)
+    marge_res <- RPRegress$main(rp_args)
     names(marge_res) <- c("H3K27ac_selected", "coef")
 
     object@intermediate[["Marge_based"]][["Marge_model"]] <- marge_res
@@ -176,51 +177,6 @@ setMethod("mapRegionScore", "Bart", function(object) {
     return(object)
 })
 
-setGeneric("combineModalities", function(object) standardGeneric("combineModalities"))
-
-setMethod("combineModalities", "Bart", function(object) {
-    gene_score_li <- object@intermediate[["Marge_based"]][["predicted_enhancers"]]
-    gene_score_df <- data.frame(
-        ID = as.integer(names(gene_score_li)),
-        gene_score = as.numeric(unname(unlist(gene_score_li)))
-    ) %>%
-        dplyr::arrange(., ID)
-
-    region_score_li <- object@intermediate[["region_based"]][["overlapped_enhancers"]]
-    region_score_df <- data.frame(
-        ID = as.integer(names(region_score_li)),
-        region_score = as.numeric(unname(unlist(region_score_li)))
-    ) %>%
-        dplyr::arrange(., ID)
-
-    bimodal_score <- cbind(
-        gene_score_df[, c("ID", "gene_score")],
-        region_score_df[, c("region_score")]
-    )
-    colnames(bimodal_score) <- c("ID", "gene_score", "region_score")
-
-    # combine scores
-    bimodal_score$combined_score <- apply(bimodal_score, 1, function(x) {
-        return(sum(x[c(2, 3)]))
-    })
-
-    counting <-
-        bimodal_score$combined_score %>%
-        split(., bimodal_score$ID)
-
-    # get sorted UDHS ids
-    positions <- counting %>%
-        unlist() %>%
-        sort(decreasing = TRUE) %>%
-        names()
-
-    object@intermediate[["bimodal"]][["combined_enhancers"]] <- counting
-    object@intermediate[["bimodal"]][["combined_enhancers_rank"]] <- positions
-
-    return(object)
-})
-
-
 setGeneric(
     "predictTF",
     function(object, mode) standardGeneric("predictTF")
@@ -263,9 +219,9 @@ setMethod("predictTF", "Bart", function(object, mode) {
     stat_res_df <- stat_res %>%
         lapply(., unlist) %>%
         as.data.frame()
-    stat_res_df$TR <- tf_names
+    stat_res_df$TF <- tf_names
     stat_res_df <- stat_res_df[, c(
-        "TR", "score", "pvalue", "zscore",
+        "TF", "score", "pvalue", "zscore",
         "max_auc", "rank_avg_z_p_a", "rank_avg_z_p_a_irwinhall_pvalue"
     )]
 

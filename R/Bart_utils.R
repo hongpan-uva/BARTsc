@@ -45,20 +45,44 @@ setMethod("str", "Bart", function(object) {
     return(invisible())
 })
 
-
+#' return BART result
+#'
+#' This function return the result of BART
+#'
+#' @param object a Bart object
+#' @param subcommand "geneset" or "region" or "bimodal"
+#'
+#' @return a dataframe of bart result
 setGeneric("getResult", function(object, subcommand) standardGeneric("getResult"))
 
 setMethod("getResult", "Bart", function(object, subcommand) {
     if (subcommand == "geneset") {
-        result <- object@result$geneset$stats
+        output.df <- object@result$geneset$stats
+        output.df[, 2] <- round(output.df[, 2], 2)
+        output.df[, 4] <- round(output.df[, 4], 3)
+        output.df[, 5] <- round(output.df[, 5], 3)
+        output.df[, 6] <- round(output.df[, 6], 3)
     } else if (subcommand == "region") {
-        result <- object@result$region$stats
+        output.df <- object@result$region$stats
+        output.df[, 2] <- round(output.df[, 2], 2)
+        output.df[, 4] <- round(output.df[, 4], 3)
+        output.df[, 5] <- round(output.df[, 5], 3)
+        output.df[, 6] <- round(output.df[, 6], 3)
+    } else if (subcommand == "bimodal") {
+        output.df <- object@result$bimodal$rank_table
     }
 
-    result[, 2] <- round(result[, 2], 2)
-    result[, 4] <- round(result[, 4], 3)
-    result[, 5] <- round(result[, 5], 3)
-    result[, 6] <- round(result[, 6], 3)
+    return(output.df)
+})
 
-    return(result)
+setGeneric("showAvailableResult", function(object) standardGeneric("showAvailableResult"))
+
+setMethod("showAvailableResult", "Bart", function(object) {
+    return(names(object@result))
+})
+
+setGeneric("showAvailableInput", function(object) standardGeneric("showAvailableInput"))
+
+setMethod("showAvailableInput", "Bart", function(object) {
+    return(names(object@data))
 })
