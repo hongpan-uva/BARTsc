@@ -46,9 +46,9 @@ runBartGeneSet <- function(object, name, genome, symbol_list = NULL,
 #'
 #' @examples
 #' bart_obj <- Bart("B_cell_region", "hg38", region_data = B_cell_region)
-#' bart_obj <- runBartBartRegion(bart_obj)
+#' bart_obj <- runBartRegion(bart_obj)
 #'
-#' bart_obj <- runBartBartRegion("B_cell_region", "hg38", B_cell_region)
+#' bart_obj <- runBartRegion("B_cell_region", "hg38", B_cell_region)
 runBartRegion <- function(object, name, genome, region_list = NULL,
                           gene_mode_param = list(binsize = 1000)) {
     if (missing(object)) {

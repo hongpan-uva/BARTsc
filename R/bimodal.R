@@ -50,7 +50,11 @@ setMethod("combineModalities", "Bart", function(object) {
     return(object)
 })
 
-
+#' get consensus rank of predictions results from both modalities
+#' @param object a bart object
+#' @param method aggregation method
+#'
+#' @noRd
 setGeneric("getConsensusRank", function(object, method = "geom.mean") standardGeneric("getConsensusRank"))
 
 setMethod("getConsensusRank", "Bart", function(object, method = "geom.mean") {
@@ -79,7 +83,8 @@ setMethod("getConsensusRank", "Bart", function(object, method = "geom.mean") {
 })
 
 #' aggregate rank of TFs from different modalities
-#' @param rank_df a dataframe, 2nd and 3rd col: first and second TF ranks
+#' @param list_1 the first ordered list to aggregate
+#' @param list_2 the second ordered list to aggregate
 #' @param method aggregation method
 #'
 #' @import RobustRankAggreg
@@ -88,7 +93,7 @@ setMethod("getConsensusRank", "Bart", function(object, method = "geom.mean") {
 .aggregate <- function(list_1, list_2, method = "geometric mean") {
     if (method %in% c("RRA", "min", "geom.mean", "mean", "median", "stuart")) {
         agg_result <- RobustRankAggreg::aggregateRanks(
-            glist = list(list_1, list_2), method = "median"
+            glist = list(list_1, list_2), method = method
         )
 
         rank_1 <- sapply(agg_result$Name, function(x) {
@@ -112,3 +117,113 @@ setMethod("getConsensusRank", "Bart", function(object, method = "geom.mean") {
 
     return(output.df)
 }
+
+#' combine the udhs profiles of two modalities based on rank aggregation
+#' @param object a bart object
+#'
+#' @noRd
+setGeneric("combineModsByRank", function(object) standardGeneric("combineModsByRank"))
+
+setMethod("combineModsByRank", "Bart", function(object) {
+    profile_1 <- unlist(object@intermediate[["Marge_based"]][["predicted_enhancers"]])
+    rank_vector_1 <- rank(-profile_1, ties.method = "average")
+    id_num <- as.integer(names(rank_vector_1))
+    rank_vector_1 <- rank_vector_1[order(id_num)]
+
+    profile_2 <- unlist(object@intermediate[["region_based"]][["overlapped_enhancers"]])
+    rank_vector_2 <- rank(-profile_2, ties.method = "average")
+    id_num <- as.integer(names(rank_vector_2))
+    rank_vector_2 <- rank_vector_2[order(id_num)]
+
+    df <- data.frame(rank_vector_1, rank_vector_2)
+
+    geom_mean_vec <- apply(df, 1, function(x) {
+        return(exp(mean(log(x))))
+    })
+
+    # use the metric for aggregated ranking as 'counting'
+    counting <- as.list(-geom_mean_vec)
+
+    # get sorted UDHS ids
+    positions <- counting %>%
+        unlist() %>%
+        sort(decreasing = TRUE) %>%
+        names()
+
+    object@intermediate[["bimodal"]][["combined_enhancers"]] <- counting
+    object@intermediate[["bimodal"]][["combined_enhancers_rank"]] <- positions
+
+    return(object)
+})
+
+#' combine the udhs profiles of two modalities based on the product of RNA and ATAC signals on UDHS
+#' @param object a bart object
+#'
+#' @noRd
+setGeneric("combineModsByProduct", function(object) standardGeneric("combineModsByProduct"))
+
+setMethod("combineModsByProduct", "Bart", function(object) {
+    profile_1 <- unlist(object@intermediate[["Marge_based"]][["predicted_enhancers"]])
+    id_num <- as.integer(names(profile_1))
+    profile_1 <- profile_1[order(id_num)]
+
+    profile_2 <- unlist(object@intermediate[["region_based"]][["overlapped_enhancers"]])
+    id_num <- as.integer(names(profile_2))
+    profile_2 <- profile_2[order(id_num)]
+
+    df <- data.frame(profile_1, profile_2)
+
+    product <- df$profile_1 * df$profile_2
+    names(product) <- rownames(df)
+
+    # use the product as 'counting'
+    counting <- as.list(product)
+
+    # get sorted UDHS ids
+    positions <- counting %>%
+        unlist() %>%
+        sort(decreasing = TRUE) %>%
+        names()
+
+    object@intermediate[["bimodal"]][["combined_enhancers"]] <- counting
+    object@intermediate[["bimodal"]][["combined_enhancers_rank"]] <- positions
+
+    return(object)
+})
+
+#' combine the udhs profiles of two modalities based on the product of RNA and ATAC signals on UDHS
+#' @param object a bart object
+#'
+#' @noRd
+setGeneric("refineRNAWithATAC", function(object) standardGeneric("refineRNAWithATAC"))
+
+setMethod("refineRNAWithATAC", "Bart", function(object) {
+    profile_1 <- unlist(object@intermediate[["Marge_based"]][["predicted_enhancers"]])
+    id_num <- as.integer(names(profile_1))
+    profile_1 <- profile_1[order(id_num)]
+
+    profile_2 <- unlist(object@intermediate[["region_based"]][["overlapped_enhancers"]])
+    id_num <- as.integer(names(profile_2))
+    profile_2 <- profile_2[order(id_num)]
+
+    df <- data.frame(profile_1, profile_2)
+
+    df$profile_2 <- as.numeric(df$profile_2 > 0)
+
+    product <- df$profile_1 * df$profile_2
+    names(product) <- rownames(df)
+
+    # use the product as 'counting'
+    counting <- as.list(product)
+
+    # get sorted UDHS ids
+    positions <- counting %>%
+        unlist() %>%
+        sort(decreasing = TRUE) %>%
+        names()
+
+    object@intermediate[["bimodal"]][["combined_enhancers"]] <- counting
+    object@intermediate[["bimodal"]][["combined_enhancers_rank"]] <- positions
+
+    return(object)
+})

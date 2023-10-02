@@ -208,6 +208,8 @@ setMethod("predictTF", "Bart", function(object, mode) {
             object@intermediate[[INT]][[positions]]
         )
 
+    print(paste(length(tied_list), "tied intervals"))
+
     # calculate auc
     auc <-
         AUCcalc$cal_auc(args, object@intermediate[[INT]][[positions]], tied_list)
@@ -221,7 +223,7 @@ setMethod("predictTF", "Bart", function(object, mode) {
         as.data.frame()
     stat_res_df$TF <- tf_names
     stat_res_df <- stat_res_df[, c(
-        "TF", "score", "pvalue", "zscore",
+        "TF", "avg_auc", "score", "pvalue", "zscore",
         "max_auc", "rank_avg_z_p_a", "rank_avg_z_p_a_irwinhall_pvalue"
     )]
 
