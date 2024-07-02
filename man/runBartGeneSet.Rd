@@ -9,7 +9,8 @@ runBartGeneSet(
   name,
   genome,
   symbol_list = NULL,
-  gene_mode_param = list(binsize = 1000)
+  gene_mode_param = list(binsize = 1000),
+  reserve_interm = FALSE
 )
 }
 \arguments{
@@ -24,15 +25,9 @@ runBartGeneSet(
 \item{gene_mode_param}{a list of costumized arguments for gene mode}
 }
 \value{
-A Bart object
+A bart object
 }
 \description{
-This function run BART geneset mode. Input could be a pre-created Bart
+This function run BART geneset mode. Input could be a pre-created bart
 object, or be set by specifying name, genome and symbol_list
-}
-\examples{
-bart_obj <- Bart("B_cell_gene", "hg38", gene_data = B_cell_gene)
-bart_obj <- runBartGeneSet(bart_obj)
-
-bart_obj <- runBartGeneSet("B_cell_gene", "hg38", B_cell_gene)
 }

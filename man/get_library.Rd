@@ -15,6 +15,3 @@ path where the library date is stored
 \description{
 Download bart2 library
 }
-\examples{
-get_library(path_of_library)
-}

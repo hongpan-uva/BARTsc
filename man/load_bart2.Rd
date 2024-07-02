@@ -4,7 +4,7 @@
 \alias{load_bart2}
 \title{load installed bart2 and modules of it}
 \usage{
-load_bart2(condaenv = NULL, virtualenv = "scbart_env")
+load_bart2(condaenv = NULL, virtualenv = "bartsc_env")
 }
 \arguments{
 \item{condaenv}{conda environemnt name}

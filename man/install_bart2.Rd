@@ -17,6 +17,3 @@ no return
 \description{
 install bart2 python package
 }
-\examples{
-install_bart2(path_of_library)
-}

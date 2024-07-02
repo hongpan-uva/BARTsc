@@ -1,0 +1,705 @@
+
+           ___      .______        ______  __    __  .______      
+          /   \     |   _  \      /      ||  |  |  | |   _  \     
+         /  ^  \    |  |_)  |    |  ,----'|  |__|  | |  |_)  |    
+        /  /_\  \   |      /     |  |     |   __   | |      /     
+       /  _____  \  |  |\  \\___ |  `----.|  |  |  | |  |\  \\___.
+      /__/     \__\ | _| `._____| \______||__|  |__| | _| `._____|
+    
+Logging With ArchR!
+
+Start Time : 2024-01-08 16:53:06.932144
+
+------- ArchR Info
+
+ArchRThreads = 20
+
+------- System Info
+
+Computer OS = unix
+Total Cores = 40
+
+------- Session Info
+
+R version 4.3.1 (2023-06-16)
+Platform: x86_64-pc-linux-gnu (64-bit)
+Running under: Rocky Linux 8.7 (Green Obsidian)
+
+Matrix products: default
+BLAS/LAPACK: /sfs/applications/202312/software/standard/compiler/gcc/11.4.0/openblas/0.3.21/lib/libopenblas_sandybridgep-r0.3.21.so;  LAPACK version 3.9.0
+
+Random number generation:
+ RNG:     L'Ecuyer-CMRG 
+ Normal:  Inversion 
+ Sample:  Rejection 
+ 
+locale:
+ [1] LC_CTYPE=en_US.UTF-8       LC_NUMERIC=C              
+ [3] LC_TIME=en_US.UTF-8        LC_COLLATE=en_US.UTF-8    
+ [5] LC_MONETARY=en_US.UTF-8    LC_MESSAGES=en_US.UTF-8   
+ [7] LC_PAPER=en_US.UTF-8       LC_NAME=C                 
+ [9] LC_ADDRESS=C               LC_TELEPHONE=C            
+[11] LC_MEASUREMENT=en_US.UTF-8 LC_IDENTIFICATION=C       
+
+time zone: America/New_York
+tzcode source: system (glibc)
+
+attached base packages:
+[1] stats4    grid      stats     graphics  grDevices utils     datasets 
+[8] methods   base     
+
+other attached packages:
+ [1] BARTsc_0.0.0.9000           testthat_3.2.0             
+ [3] devtools_2.4.5              usethis_2.2.2              
+ [5] rhdf5_2.46.1                SummarizedExperiment_1.32.0
+ [7] Biobase_2.62.0              MatrixGenerics_1.14.0      
+ [9] Rcpp_1.0.11                 Matrix_1.6-4               
+[11] GenomicRanges_1.54.1        GenomeInfoDb_1.38.2        
+[13] IRanges_2.36.0              S4Vectors_0.40.2           
+[15] BiocGenerics_0.48.1         matrixStats_1.2.0          
+[17] data.table_1.14.10          stringr_1.5.1              
+[19] plyr_1.8.9                  magrittr_2.0.3             
+[21] ggplot2_3.4.4               gtable_0.3.4               
+[23] gtools_3.9.5                gridExtra_2.3              
+[25] ArchR_1.0.2                 Seurat_5.0.1               
+[27] SeuratObject_5.0.1          sp_2.1-1                   
+
+loaded via a namespace (and not attached):
+  [1] RcppAnnoy_0.0.21        splines_4.3.1           later_1.3.2            
+  [4] bitops_1.0-7            tibble_3.2.1            polyclip_1.10-6        
+  [7] fastDummies_1.7.3       lifecycle_1.0.4         rprojroot_2.0.4        
+ [10] globals_0.16.2          lattice_0.22-5          MASS_7.3-60            
+ [13] plotly_4.10.3           remotes_2.4.2.1         httpuv_1.6.13          
+ [16] sctransform_0.4.1       spam_2.10-0             sessioninfo_1.2.2      
+ [19] pkgbuild_1.4.3          spatstat.sparse_3.0-3   reticulate_1.34.0      
+ [22] cowplot_1.1.2           pbapply_1.7-2           RColorBrewer_1.1-3     
+ [25] abind_1.4-5             pkgload_1.3.3           zlibbioc_1.48.0        
+ [28] Rtsne_0.17              purrr_1.0.2             RCurl_1.98-1.13        
+ [31] rappdirs_0.3.3          GenomeInfoDbData_1.2.11 ggrepel_0.9.4          
+ [34] irlba_2.3.5.1           listenv_0.9.0           spatstat.utils_3.0-4   
+ [37] goftest_1.2-3           RSpectra_0.16-1         spatstat.random_3.2-2  
+ [40] fitdistrplus_1.1-11     parallelly_1.36.0       leiden_0.4.3.1         
+ [43] codetools_0.2-19        DelayedArray_0.28.0     tidyselect_1.2.0       
+ [46] spatstat.explore_3.2-5  jsonlite_1.8.8          ellipsis_0.3.2         
+ [49] progressr_0.14.0        ggridges_0.5.5          survival_3.5-7         
+ [52] RobustRankAggreg_1.2.1  tools_4.3.1             ica_1.0-3              
+ [55] glue_1.6.2              SparseArray_1.2.2       dplyr_1.1.4            
+ [58] withr_2.5.2             combinat_0.0-8          fastmap_1.1.1          
+ [61] rhdf5filters_1.14.1     fansi_1.0.6             digest_0.6.33          
+ [64] R6_2.5.1                mime_0.12               colorspace_2.1-0       
+ [67] scattermore_1.2         Cairo_1.6-2             tensor_1.5             
+ [70] spatstat.data_3.0-3     utf8_1.2.4              tidyr_1.3.0            
+ [73] generics_0.1.3          httr_1.4.7              htmlwidgets_1.6.4      
+ [76] S4Arrays_1.2.0          uwot_0.1.16             pkgconfig_2.0.3        
+ [79] lmtest_0.9-40           XVector_0.42.0          brio_1.1.3             
+ [82] htmltools_0.5.7         profvis_0.3.8           dotCall64_1.1-0        
+ [85] scales_1.3.0            png_0.1-8               ggdendro_0.1.23        
+ [88] rstudioapi_0.15.0       reshape2_1.4.4          nlme_3.1-163           
+ [91] zoo_1.8-12              cachem_1.0.8            KernSmooth_2.23-22     
+ [94] parallel_4.3.1          miniUI_0.1.1.1          desc_1.4.3             
+ [97] pillar_1.9.0            vctrs_0.6.5             RANN_2.6.1             
+[100] urlchecker_1.0.1        promises_1.2.1          xtable_1.8-4           
+[103] cluster_2.1.6           cli_3.6.2               compiler_4.3.1         
+[106] rlang_1.1.2             crayon_1.5.2            future.apply_1.11.0    
+[109] fs_1.6.3                stringi_1.8.3           viridisLite_0.4.2      
+[112] deldir_1.0-9            munsell_0.5.0           lazyeval_0.2.2         
+[115] spatstat.geom_3.2-7     RcppHNSW_0.5.0          patchwork_1.1.3        
+[118] future_1.33.0           Rhdf5lib_1.24.1         shiny_1.8.0            
+[121] ROCR_1.0-11             igraph_1.6.0            memoise_2.0.1          
+
+
+------- Log Info
+
+
+2024-01-08 16:53:07.111081 : addGroupCoverages Input-Parameters, Class = list
+
+addGroupCoverages Input-Parameters$ArchRProj: length = 1
+
+addGroupCoverages Input-Parameters$groupBy: length = 1
+[1] "cell_type_lv1"
+
+
+addGroupCoverages Input-Parameters$useLabels: length = 1
+[1] TRUE
+
+
+addGroupCoverages Input-Parameters$sampleLabels: length = 1
+[1] "Sample"
+
+
+addGroupCoverages Input-Parameters$minCells: length = 1
+[1] 40
+
+
+addGroupCoverages Input-Parameters$maxCells: length = 1
+[1] 500
+
+
+addGroupCoverages Input-Parameters$maxFragments: length = 1
+[1] 2.5e+07
+
+
+addGroupCoverages Input-Parameters$minReplicates: length = 1
+[1] 2
+
+
+addGroupCoverages Input-Parameters$maxReplicates: length = 1
+[1] 5
+
+
+addGroupCoverages Input-Parameters$sampleRatio: length = 1
+[1] 0.8
+
+
+addGroupCoverages Input-Parameters$kmerLength: length = 1
+[1] 6
+
+
+addGroupCoverages Input-Parameters$threads: length = 1
+[1] 1
+
+
+addGroupCoverages Input-Parameters$returnGroups: length = 1
+[1] FALSE
+
+
+addGroupCoverages Input-Parameters$parallelParam: length = 0
+NULL
+
+
+addGroupCoverages Input-Parameters$force: length = 1
+[1] TRUE
+
+
+addGroupCoverages Input-Parameters$verbose: length = 1
+[1] TRUE
+
+
+addGroupCoverages Input-Parameters$logFile: length = 1
+[1] "ArchRLogs/ArchR-addGroupCoverages-9a1121db3c5dc-Date-2024-01-08_Time-16-53-06.929641.log"
+
+
+
+2024-01-08 16:53:07.181433 : B_cells (1 of 5) : CellGroups N = 2
+
+2024-01-08 16:53:07.20116 : Dendritic_cells (2 of 5) : CellGroups N = 2
+
+2024-01-08 16:53:07.227302 : Monocytes (3 of 5) : CellGroups N = 2
+
+2024-01-08 16:53:07.252568 : NK (4 of 5) : CellGroups N = 2
+
+2024-01-08 16:53:07.278833 : T_cells (5 of 5) : CellGroups N = 2
+2024-01-08 16:53:07.553038 : Batch Execution w/ safelapply!, 0.01 mins elapsed.
+2024-01-08 16:53:07.554808 : Group B_cells._.Rep1 (1 of 10) : Creating Group Coverage File : B_cells._.Rep1.insertions.coverage.h5, 0.01 mins elapsed.
+
+2024-01-08 16:53:07.556905 : Group B_cells._.Rep1 (1 of 10) : cellGroupi, Class = character
+
+Group B_cells._.Rep1 (1 of 10) : cellGroupi: length = 500
+[1] "pbmc_sorted_10k#GAGCTAGCATGTCGCG-1" "pbmc_sorted_10k#TTAGAAGCAGGATGGC-1"
+[3] "pbmc_sorted_10k#TGATCGAGTATTCGTC-1" "pbmc_sorted_10k#CTAATCGCATTGTGCA-1"
+[5] "pbmc_sorted_10k#GGTTGCTCAAGGTGCA-1" "pbmc_sorted_10k#GCTAGCTCATGTCAAT-1"
+
+
+
+2024-01-08 16:53:07.558607 : Number of Cells = 500
+
+2024-01-08 16:53:07.562061 : Coverage File Exists!
+
+2024-01-08 16:53:07.564219 : Added Coverage Group
+
+2024-01-08 16:53:07.566261 : Added Metadata Group
+
+2024-01-08 16:53:07.572818 : Added ArrowCoverage Class
+
+2024-01-08 16:53:07.575826 : Added Coverage/Info
+
+2024-01-08 16:53:07.583512 : Added Coverage/Info/CellNames
+2024-01-08 16:53:07.584021 : Group B_cells._.Rep1 (1 of 10) : Processed Fragments Chr (1 of 24), 0.011 mins elapsed.
+2024-01-08 16:53:09.537635 : Group B_cells._.Rep1 (1 of 10) : Processed Fragments Chr (2 of 24), 0.043 mins elapsed.
+2024-01-08 16:53:10.610176 : Group B_cells._.Rep1 (1 of 10) : Processed Fragments Chr (3 of 24), 0.061 mins elapsed.
+2024-01-08 16:53:11.828722 : Group B_cells._.Rep1 (1 of 10) : Processed Fragments Chr (4 of 24), 0.082 mins elapsed.
+2024-01-08 16:53:13.037024 : Group B_cells._.Rep1 (1 of 10) : Processed Fragments Chr (5 of 24), 0.102 mins elapsed.
+2024-01-08 16:53:13.85512 : Group B_cells._.Rep1 (1 of 10) : Processed Fragments Chr (6 of 24), 0.115 mins elapsed.
+2024-01-08 16:53:14.921004 : Group B_cells._.Rep1 (1 of 10) : Processed Fragments Chr (7 of 24), 0.133 mins elapsed.
+2024-01-08 16:53:15.907211 : Group B_cells._.Rep1 (1 of 10) : Processed Fragments Chr (8 of 24), 0.15 mins elapsed.
+2024-01-08 16:53:17.048987 : Group B_cells._.Rep1 (1 of 10) : Processed Fragments Chr (9 of 24), 0.169 mins elapsed.
+2024-01-08 16:53:18.456631 : Group B_cells._.Rep1 (1 of 10) : Processed Fragments Chr (10 of 24), 0.192 mins elapsed.
+2024-01-08 16:53:19.231925 : Group B_cells._.Rep1 (1 of 10) : Processed Fragments Chr (11 of 24), 0.205 mins elapsed.
+2024-01-08 16:53:20.840279 : Group B_cells._.Rep1 (1 of 10) : Processed Fragments Chr (12 of 24), 0.232 mins elapsed.
+2024-01-08 16:53:22.374544 : Group B_cells._.Rep1 (1 of 10) : Processed Fragments Chr (13 of 24), 0.257 mins elapsed.
+2024-01-08 16:53:23.276659 : Group B_cells._.Rep1 (1 of 10) : Processed Fragments Chr (14 of 24), 0.272 mins elapsed.
+2024-01-08 16:53:23.993548 : Group B_cells._.Rep1 (1 of 10) : Processed Fragments Chr (15 of 24), 0.284 mins elapsed.
+2024-01-08 16:53:24.911736 : Group B_cells._.Rep1 (1 of 10) : Processed Fragments Chr (16 of 24), 0.3 mins elapsed.
+2024-01-08 16:53:26.246775 : Group B_cells._.Rep1 (1 of 10) : Processed Fragments Chr (17 of 24), 0.322 mins elapsed.
+2024-01-08 16:53:27.259794 : Group B_cells._.Rep1 (1 of 10) : Processed Fragments Chr (18 of 24), 0.339 mins elapsed.
+2024-01-08 16:53:28.388745 : Group B_cells._.Rep1 (1 of 10) : Processed Fragments Chr (19 of 24), 0.358 mins elapsed.
+2024-01-08 16:53:29.709541 : Group B_cells._.Rep1 (1 of 10) : Processed Fragments Chr (20 of 24), 0.38 mins elapsed.
+2024-01-08 16:53:30.852983 : Group B_cells._.Rep1 (1 of 10) : Processed Fragments Chr (21 of 24), 0.399 mins elapsed.
+2024-01-08 16:53:31.869556 : Group B_cells._.Rep1 (1 of 10) : Processed Fragments Chr (22 of 24), 0.416 mins elapsed.
+2024-01-08 16:53:32.937677 : Group B_cells._.Rep1 (1 of 10) : Processed Fragments Chr (23 of 24), 0.433 mins elapsed.
+2024-01-08 16:53:33.788167 : Group B_cells._.Rep1 (1 of 10) : Processed Fragments Chr (24 of 24), 0.448 mins elapsed.
+2024-01-08 16:53:34.384282 : Group B_cells._.Rep2 (2 of 10) : Creating Group Coverage File : B_cells._.Rep2.insertions.coverage.h5, 0.458 mins elapsed.
+
+2024-01-08 16:53:34.38508 : Group B_cells._.Rep2 (2 of 10) : cellGroupi, Class = character
+
+Group B_cells._.Rep2 (2 of 10) : cellGroupi: length = 40
+[1] "pbmc_sorted_10k#GTTAACGGTGAGGTGA-1" "pbmc_sorted_10k#GAACACAAGAGAAGGG-1"
+[3] "pbmc_sorted_10k#AGCGGATAGCCTGGTA-1" "pbmc_sorted_10k#TTTGCATTCTACTAAG-1"
+[5] "pbmc_sorted_10k#TCCTGTTCAGGATAAC-1" "pbmc_sorted_10k#TACTGAGGTGAGCGAA-1"
+
+
+
+2024-01-08 16:53:34.386822 : Number of Cells = 40
+
+2024-01-08 16:53:34.38997 : Coverage File Exists!
+
+2024-01-08 16:53:34.392217 : Added Coverage Group
+
+2024-01-08 16:53:34.394196 : Added Metadata Group
+
+2024-01-08 16:53:34.400218 : Added ArrowCoverage Class
+
+2024-01-08 16:53:34.402315 : Added Coverage/Info
+
+2024-01-08 16:53:34.408409 : Added Coverage/Info/CellNames
+2024-01-08 16:53:34.408881 : Group B_cells._.Rep2 (2 of 10) : Processed Fragments Chr (1 of 24), 0.458 mins elapsed.
+2024-01-08 16:53:35.719264 : Group B_cells._.Rep2 (2 of 10) : Processed Fragments Chr (2 of 24), 0.48 mins elapsed.
+2024-01-08 16:53:36.62095 : Group B_cells._.Rep2 (2 of 10) : Processed Fragments Chr (3 of 24), 0.495 mins elapsed.
+2024-01-08 16:53:37.604524 : Group B_cells._.Rep2 (2 of 10) : Processed Fragments Chr (4 of 24), 0.511 mins elapsed.
+2024-01-08 16:53:38.580308 : Group B_cells._.Rep2 (2 of 10) : Processed Fragments Chr (5 of 24), 0.528 mins elapsed.
+2024-01-08 16:53:39.319597 : Group B_cells._.Rep2 (2 of 10) : Processed Fragments Chr (6 of 24), 0.54 mins elapsed.
+2024-01-08 16:53:40.167858 : Group B_cells._.Rep2 (2 of 10) : Processed Fragments Chr (7 of 24), 0.554 mins elapsed.
+2024-01-08 16:53:40.979304 : Group B_cells._.Rep2 (2 of 10) : Processed Fragments Chr (8 of 24), 0.567 mins elapsed.
+2024-01-08 16:53:41.887596 : Group B_cells._.Rep2 (2 of 10) : Processed Fragments Chr (9 of 24), 0.583 mins elapsed.
+2024-01-08 16:53:42.936756 : Group B_cells._.Rep2 (2 of 10) : Processed Fragments Chr (10 of 24), 0.6 mins elapsed.
+2024-01-08 16:53:43.630463 : Group B_cells._.Rep2 (2 of 10) : Processed Fragments Chr (11 of 24), 0.612 mins elapsed.
+2024-01-08 16:53:44.749904 : Group B_cells._.Rep2 (2 of 10) : Processed Fragments Chr (12 of 24), 0.63 mins elapsed.
+2024-01-08 16:53:45.864288 : Group B_cells._.Rep2 (2 of 10) : Processed Fragments Chr (13 of 24), 0.649 mins elapsed.
+2024-01-08 16:53:46.654782 : Group B_cells._.Rep2 (2 of 10) : Processed Fragments Chr (14 of 24), 0.662 mins elapsed.
+2024-01-08 16:53:47.31928 : Group B_cells._.Rep2 (2 of 10) : Processed Fragments Chr (15 of 24), 0.673 mins elapsed.
+2024-01-08 16:53:48.084623 : Group B_cells._.Rep2 (2 of 10) : Processed Fragments Chr (16 of 24), 0.686 mins elapsed.
+2024-01-08 16:53:49.095595 : Group B_cells._.Rep2 (2 of 10) : Processed Fragments Chr (17 of 24), 0.703 mins elapsed.
+2024-01-08 16:53:49.948949 : Group B_cells._.Rep2 (2 of 10) : Processed Fragments Chr (18 of 24), 0.717 mins elapsed.
+2024-01-08 16:53:50.872978 : Group B_cells._.Rep2 (2 of 10) : Processed Fragments Chr (19 of 24), 0.732 mins elapsed.
+2024-01-08 16:53:51.88686 : Group B_cells._.Rep2 (2 of 10) : Processed Fragments Chr (20 of 24), 0.749 mins elapsed.
+2024-01-08 16:53:52.825249 : Group B_cells._.Rep2 (2 of 10) : Processed Fragments Chr (21 of 24), 0.765 mins elapsed.
+2024-01-08 16:53:53.684229 : Group B_cells._.Rep2 (2 of 10) : Processed Fragments Chr (22 of 24), 0.779 mins elapsed.
+2024-01-08 16:53:54.580294 : Group B_cells._.Rep2 (2 of 10) : Processed Fragments Chr (23 of 24), 0.794 mins elapsed.
+2024-01-08 16:53:55.337911 : Group B_cells._.Rep2 (2 of 10) : Processed Fragments Chr (24 of 24), 0.807 mins elapsed.
+2024-01-08 16:53:55.922665 : Group Dendritic_cells._.Rep1 (3 of 10) : Creating Group Coverage File : Dendritic_cells._.Rep1.insertions.coverage.h5, 0.817 mins elapsed.
+
+2024-01-08 16:53:55.923447 : Group Dendritic_cells._.Rep1 (3 of 10) : cellGroupi, Class = character
+
+Group Dendritic_cells._.Rep1 (3 of 10) : cellGroupi: length = 50
+[1] "pbmc_sorted_10k#AACCCGCAGGCGGATG-1" "pbmc_sorted_10k#GTGTTCCTCAGTGAAG-1"
+[3] "pbmc_sorted_10k#GCAAGTCGTGGAAGGC-1" "pbmc_sorted_10k#TTAGGCGTCCTTCGTA-1"
+[5] "pbmc_sorted_10k#AGAAGGTGTAGGTTGC-1" "pbmc_sorted_10k#CGTGAGGAGGGACTAA-1"
+
+
+
+2024-01-08 16:53:55.925175 : Number of Cells = 50
+
+2024-01-08 16:53:55.928427 : Coverage File Exists!
+
+2024-01-08 16:53:55.930486 : Added Coverage Group
+
+2024-01-08 16:53:55.932451 : Added Metadata Group
+
+2024-01-08 16:53:55.938388 : Added ArrowCoverage Class
+
+2024-01-08 16:53:55.94038 : Added Coverage/Info
+
+2024-01-08 16:53:55.946552 : Added Coverage/Info/CellNames
+2024-01-08 16:53:55.946981 : Group Dendritic_cells._.Rep1 (3 of 10) : Processed Fragments Chr (1 of 24), 0.817 mins elapsed.
+2024-01-08 16:53:57.289348 : Group Dendritic_cells._.Rep1 (3 of 10) : Processed Fragments Chr (2 of 24), 0.839 mins elapsed.
+2024-01-08 16:53:58.20689 : Group Dendritic_cells._.Rep1 (3 of 10) : Processed Fragments Chr (3 of 24), 0.855 mins elapsed.
+2024-01-08 16:53:59.205665 : Group Dendritic_cells._.Rep1 (3 of 10) : Processed Fragments Chr (4 of 24), 0.871 mins elapsed.
+2024-01-08 16:54:00.198236 : Group Dendritic_cells._.Rep1 (3 of 10) : Processed Fragments Chr (5 of 24), 0.888 mins elapsed.
+2024-01-08 16:54:00.943261 : Group Dendritic_cells._.Rep1 (3 of 10) : Processed Fragments Chr (6 of 24), 0.9 mins elapsed.
+2024-01-08 16:54:01.804617 : Group Dendritic_cells._.Rep1 (3 of 10) : Processed Fragments Chr (7 of 24), 0.915 mins elapsed.
+2024-01-08 16:54:02.624764 : Group Dendritic_cells._.Rep1 (3 of 10) : Processed Fragments Chr (8 of 24), 0.928 mins elapsed.
+2024-01-08 16:54:03.543004 : Group Dendritic_cells._.Rep1 (3 of 10) : Processed Fragments Chr (9 of 24), 0.944 mins elapsed.
+2024-01-08 16:54:04.611065 : Group Dendritic_cells._.Rep1 (3 of 10) : Processed Fragments Chr (10 of 24), 0.961 mins elapsed.
+2024-01-08 16:54:05.315024 : Group Dendritic_cells._.Rep1 (3 of 10) : Processed Fragments Chr (11 of 24), 0.973 mins elapsed.
+2024-01-08 16:54:06.445003 : Group Dendritic_cells._.Rep1 (3 of 10) : Processed Fragments Chr (12 of 24), 0.992 mins elapsed.
+2024-01-08 16:54:07.581647 : Group Dendritic_cells._.Rep1 (3 of 10) : Processed Fragments Chr (13 of 24), 1.011 mins elapsed.
+2024-01-08 16:54:08.383271 : Group Dendritic_cells._.Rep1 (3 of 10) : Processed Fragments Chr (14 of 24), 1.024 mins elapsed.
+2024-01-08 16:54:09.051095 : Group Dendritic_cells._.Rep1 (3 of 10) : Processed Fragments Chr (15 of 24), 1.035 mins elapsed.
+2024-01-08 16:54:09.822279 : Group Dendritic_cells._.Rep1 (3 of 10) : Processed Fragments Chr (16 of 24), 1.048 mins elapsed.
+2024-01-08 16:54:10.850648 : Group Dendritic_cells._.Rep1 (3 of 10) : Processed Fragments Chr (17 of 24), 1.065 mins elapsed.
+2024-01-08 16:54:11.716062 : Group Dendritic_cells._.Rep1 (3 of 10) : Processed Fragments Chr (18 of 24), 1.08 mins elapsed.
+2024-01-08 16:54:12.651378 : Group Dendritic_cells._.Rep1 (3 of 10) : Processed Fragments Chr (19 of 24), 1.095 mins elapsed.
+2024-01-08 16:54:13.678453 : Group Dendritic_cells._.Rep1 (3 of 10) : Processed Fragments Chr (20 of 24), 1.112 mins elapsed.
+2024-01-08 16:54:14.631003 : Group Dendritic_cells._.Rep1 (3 of 10) : Processed Fragments Chr (21 of 24), 1.128 mins elapsed.
+2024-01-08 16:54:15.542585 : Group Dendritic_cells._.Rep1 (3 of 10) : Processed Fragments Chr (22 of 24), 1.144 mins elapsed.
+2024-01-08 16:54:16.453831 : Group Dendritic_cells._.Rep1 (3 of 10) : Processed Fragments Chr (23 of 24), 1.159 mins elapsed.
+2024-01-08 16:54:17.218522 : Group Dendritic_cells._.Rep1 (3 of 10) : Processed Fragments Chr (24 of 24), 1.171 mins elapsed.
+2024-01-08 16:54:17.804191 : Group Dendritic_cells._.Rep2 (4 of 10) : Creating Group Coverage File : Dendritic_cells._.Rep2.insertions.coverage.h5, 1.181 mins elapsed.
+
+2024-01-08 16:54:17.804929 : Group Dendritic_cells._.Rep2 (4 of 10) : cellGroupi, Class = character
+
+Group Dendritic_cells._.Rep2 (4 of 10) : cellGroupi: length = 40
+[1] "pbmc_sorted_10k#GGTTCCCGTAACGTGC-1" "pbmc_sorted_10k#GAAGGAACAACCGCCA-1"
+[3] "pbmc_sorted_10k#TGGATTCAGTCATGCG-1" "pbmc_sorted_10k#AGTACGCGTGAGACTC-1"
+[5] "pbmc_sorted_10k#AGTGAGTCAGGATAAC-1" "pbmc_sorted_10k#TTGGATATCCCATAGG-1"
+
+
+
+2024-01-08 16:54:17.80666 : Number of Cells = 40
+
+2024-01-08 16:54:17.810081 : Coverage File Exists!
+
+2024-01-08 16:54:17.812256 : Added Coverage Group
+
+2024-01-08 16:54:17.814342 : Added Metadata Group
+
+2024-01-08 16:54:17.820411 : Added ArrowCoverage Class
+
+2024-01-08 16:54:17.822452 : Added Coverage/Info
+
+2024-01-08 16:54:17.828506 : Added Coverage/Info/CellNames
+2024-01-08 16:54:17.828922 : Group Dendritic_cells._.Rep2 (4 of 10) : Processed Fragments Chr (1 of 24), 1.182 mins elapsed.
+2024-01-08 16:54:19.198632 : Group Dendritic_cells._.Rep2 (4 of 10) : Processed Fragments Chr (2 of 24), 1.204 mins elapsed.
+2024-01-08 16:54:20.112122 : Group Dendritic_cells._.Rep2 (4 of 10) : Processed Fragments Chr (3 of 24), 1.22 mins elapsed.
+2024-01-08 16:54:21.134516 : Group Dendritic_cells._.Rep2 (4 of 10) : Processed Fragments Chr (4 of 24), 1.237 mins elapsed.
+2024-01-08 16:54:22.119703 : Group Dendritic_cells._.Rep2 (4 of 10) : Processed Fragments Chr (5 of 24), 1.253 mins elapsed.
+2024-01-08 16:54:22.860997 : Group Dendritic_cells._.Rep2 (4 of 10) : Processed Fragments Chr (6 of 24), 1.266 mins elapsed.
+2024-01-08 16:54:23.727701 : Group Dendritic_cells._.Rep2 (4 of 10) : Processed Fragments Chr (7 of 24), 1.28 mins elapsed.
+2024-01-08 16:54:24.545788 : Group Dendritic_cells._.Rep2 (4 of 10) : Processed Fragments Chr (8 of 24), 1.294 mins elapsed.
+2024-01-08 16:54:25.459571 : Group Dendritic_cells._.Rep2 (4 of 10) : Processed Fragments Chr (9 of 24), 1.309 mins elapsed.
+2024-01-08 16:54:26.517152 : Group Dendritic_cells._.Rep2 (4 of 10) : Processed Fragments Chr (10 of 24), 1.326 mins elapsed.
+2024-01-08 16:54:27.223112 : Group Dendritic_cells._.Rep2 (4 of 10) : Processed Fragments Chr (11 of 24), 1.338 mins elapsed.
+2024-01-08 16:54:28.345897 : Group Dendritic_cells._.Rep2 (4 of 10) : Processed Fragments Chr (12 of 24), 1.357 mins elapsed.
+2024-01-08 16:54:29.473296 : Group Dendritic_cells._.Rep2 (4 of 10) : Processed Fragments Chr (13 of 24), 1.376 mins elapsed.
+2024-01-08 16:54:30.270082 : Group Dendritic_cells._.Rep2 (4 of 10) : Processed Fragments Chr (14 of 24), 1.389 mins elapsed.
+2024-01-08 16:54:30.938639 : Group Dendritic_cells._.Rep2 (4 of 10) : Processed Fragments Chr (15 of 24), 1.4 mins elapsed.
+2024-01-08 16:54:31.705315 : Group Dendritic_cells._.Rep2 (4 of 10) : Processed Fragments Chr (16 of 24), 1.413 mins elapsed.
+2024-01-08 16:54:32.726159 : Group Dendritic_cells._.Rep2 (4 of 10) : Processed Fragments Chr (17 of 24), 1.43 mins elapsed.
+2024-01-08 16:54:33.586338 : Group Dendritic_cells._.Rep2 (4 of 10) : Processed Fragments Chr (18 of 24), 1.444 mins elapsed.
+2024-01-08 16:54:34.521749 : Group Dendritic_cells._.Rep2 (4 of 10) : Processed Fragments Chr (19 of 24), 1.46 mins elapsed.
+2024-01-08 16:54:35.540114 : Group Dendritic_cells._.Rep2 (4 of 10) : Processed Fragments Chr (20 of 24), 1.477 mins elapsed.
+2024-01-08 16:54:36.487702 : Group Dendritic_cells._.Rep2 (4 of 10) : Processed Fragments Chr (21 of 24), 1.493 mins elapsed.
+2024-01-08 16:54:37.350999 : Group Dendritic_cells._.Rep2 (4 of 10) : Processed Fragments Chr (22 of 24), 1.507 mins elapsed.
+2024-01-08 16:54:38.253341 : Group Dendritic_cells._.Rep2 (4 of 10) : Processed Fragments Chr (23 of 24), 1.522 mins elapsed.
+2024-01-08 16:54:39.016638 : Group Dendritic_cells._.Rep2 (4 of 10) : Processed Fragments Chr (24 of 24), 1.535 mins elapsed.
+2024-01-08 16:54:39.601303 : Group Monocytes._.Rep1 (5 of 10) : Creating Group Coverage File : Monocytes._.Rep1.insertions.coverage.h5, 1.545 mins elapsed.
+
+2024-01-08 16:54:39.603511 : Group Monocytes._.Rep1 (5 of 10) : cellGroupi, Class = character
+
+Group Monocytes._.Rep1 (5 of 10) : cellGroupi: length = 500
+[1] "pbmc_sorted_10k#CCTTCGGTCGCTAGCA-1" "pbmc_sorted_10k#TACTGAGGTTACTAGG-1"
+[3] "pbmc_sorted_10k#ATTTGCGCAGTCTATG-1" "pbmc_sorted_10k#GCGATTTAGTCTCACC-1"
+[5] "pbmc_sorted_10k#TACTTCGTCCCTCGCA-1" "pbmc_sorted_10k#GGAACAATCCGTTAAA-1"
+
+
+
+2024-01-08 16:54:39.605243 : Number of Cells = 500
+
+2024-01-08 16:54:39.608454 : Coverage File Exists!
+
+2024-01-08 16:54:39.610551 : Added Coverage Group
+
+2024-01-08 16:54:39.612579 : Added Metadata Group
+
+2024-01-08 16:54:39.618548 : Added ArrowCoverage Class
+
+2024-01-08 16:54:39.620553 : Added Coverage/Info
+
+2024-01-08 16:54:39.627851 : Added Coverage/Info/CellNames
+2024-01-08 16:54:39.628262 : Group Monocytes._.Rep1 (5 of 10) : Processed Fragments Chr (1 of 24), 1.545 mins elapsed.
+2024-01-08 16:54:41.554061 : Group Monocytes._.Rep1 (5 of 10) : Processed Fragments Chr (2 of 24), 1.577 mins elapsed.
+2024-01-08 16:54:42.697841 : Group Monocytes._.Rep1 (5 of 10) : Processed Fragments Chr (3 of 24), 1.596 mins elapsed.
+2024-01-08 16:54:43.95502 : Group Monocytes._.Rep1 (5 of 10) : Processed Fragments Chr (4 of 24), 1.617 mins elapsed.
+2024-01-08 16:54:45.218009 : Group Monocytes._.Rep1 (5 of 10) : Processed Fragments Chr (5 of 24), 1.638 mins elapsed.
+2024-01-08 16:54:46.036891 : Group Monocytes._.Rep1 (5 of 10) : Processed Fragments Chr (6 of 24), 1.652 mins elapsed.
+2024-01-08 16:54:47.044048 : Group Monocytes._.Rep1 (5 of 10) : Processed Fragments Chr (7 of 24), 1.669 mins elapsed.
+2024-01-08 16:54:48.020693 : Group Monocytes._.Rep1 (5 of 10) : Processed Fragments Chr (8 of 24), 1.685 mins elapsed.
+2024-01-08 16:54:49.10836 : Group Monocytes._.Rep1 (5 of 10) : Processed Fragments Chr (9 of 24), 1.703 mins elapsed.
+2024-01-08 16:54:50.50111 : Group Monocytes._.Rep1 (5 of 10) : Processed Fragments Chr (10 of 24), 1.726 mins elapsed.
+2024-01-08 16:54:51.288957 : Group Monocytes._.Rep1 (5 of 10) : Processed Fragments Chr (11 of 24), 1.739 mins elapsed.
+2024-01-08 16:54:52.837954 : Group Monocytes._.Rep1 (5 of 10) : Processed Fragments Chr (12 of 24), 1.765 mins elapsed.
+2024-01-08 16:54:54.394285 : Group Monocytes._.Rep1 (5 of 10) : Processed Fragments Chr (13 of 24), 1.791 mins elapsed.
+2024-01-08 16:54:55.305974 : Group Monocytes._.Rep1 (5 of 10) : Processed Fragments Chr (14 of 24), 1.806 mins elapsed.
+2024-01-08 16:54:56.04597 : Group Monocytes._.Rep1 (5 of 10) : Processed Fragments Chr (15 of 24), 1.819 mins elapsed.
+2024-01-08 16:54:56.953924 : Group Monocytes._.Rep1 (5 of 10) : Processed Fragments Chr (16 of 24), 1.834 mins elapsed.
+2024-01-08 16:54:58.317737 : Group Monocytes._.Rep1 (5 of 10) : Processed Fragments Chr (17 of 24), 1.856 mins elapsed.
+2024-01-08 16:54:59.349262 : Group Monocytes._.Rep1 (5 of 10) : Processed Fragments Chr (18 of 24), 1.874 mins elapsed.
+2024-01-08 16:55:00.510638 : Group Monocytes._.Rep1 (5 of 10) : Processed Fragments Chr (19 of 24), 1.893 mins elapsed.
+2024-01-08 16:55:01.806635 : Group Monocytes._.Rep1 (5 of 10) : Processed Fragments Chr (20 of 24), 1.915 mins elapsed.
+2024-01-08 16:55:02.956028 : Group Monocytes._.Rep1 (5 of 10) : Processed Fragments Chr (21 of 24), 1.934 mins elapsed.
+2024-01-08 16:55:03.981584 : Group Monocytes._.Rep1 (5 of 10) : Processed Fragments Chr (22 of 24), 1.951 mins elapsed.
+2024-01-08 16:55:05.053761 : Group Monocytes._.Rep1 (5 of 10) : Processed Fragments Chr (23 of 24), 1.969 mins elapsed.
+2024-01-08 16:55:05.912284 : Group Monocytes._.Rep1 (5 of 10) : Processed Fragments Chr (24 of 24), 1.983 mins elapsed.
+2024-01-08 16:55:06.50016 : Group Monocytes._.Rep2 (6 of 10) : Creating Group Coverage File : Monocytes._.Rep2.insertions.coverage.h5, 1.993 mins elapsed.
+
+2024-01-08 16:55:06.50089 : Group Monocytes._.Rep2 (6 of 10) : cellGroupi, Class = character
+
+Group Monocytes._.Rep2 (6 of 10) : cellGroupi: length = 40
+[1] "pbmc_sorted_10k#AATTAGGCATACTCCT-1" "pbmc_sorted_10k#TGCGATTAGCGTGCAC-1"
+[3] "pbmc_sorted_10k#GGTTAGCGTGCAATGC-1" "pbmc_sorted_10k#CTAACCACAGTTTGTG-1"
+[5] "pbmc_sorted_10k#GGGTTACGTTACAACG-1" "pbmc_sorted_10k#CTCCCTGAGCTGTCAG-1"
+
+
+
+2024-01-08 16:55:06.502628 : Number of Cells = 40
+
+2024-01-08 16:55:06.505745 : Coverage File Exists!
+
+2024-01-08 16:55:06.507825 : Added Coverage Group
+
+2024-01-08 16:55:06.509821 : Added Metadata Group
+
+2024-01-08 16:55:06.515809 : Added ArrowCoverage Class
+
+2024-01-08 16:55:06.517821 : Added Coverage/Info
+
+2024-01-08 16:55:06.523837 : Added Coverage/Info/CellNames
+2024-01-08 16:55:06.524252 : Group Monocytes._.Rep2 (6 of 10) : Processed Fragments Chr (1 of 24), 1.993 mins elapsed.
+2024-01-08 16:55:07.843828 : Group Monocytes._.Rep2 (6 of 10) : Processed Fragments Chr (2 of 24), 2.015 mins elapsed.
+2024-01-08 16:55:08.750598 : Group Monocytes._.Rep2 (6 of 10) : Processed Fragments Chr (3 of 24), 2.03 mins elapsed.
+2024-01-08 16:55:09.733034 : Group Monocytes._.Rep2 (6 of 10) : Processed Fragments Chr (4 of 24), 2.047 mins elapsed.
+2024-01-08 16:55:10.708968 : Group Monocytes._.Rep2 (6 of 10) : Processed Fragments Chr (5 of 24), 2.063 mins elapsed.
+2024-01-08 16:55:11.448081 : Group Monocytes._.Rep2 (6 of 10) : Processed Fragments Chr (6 of 24), 2.075 mins elapsed.
+2024-01-08 16:55:12.293314 : Group Monocytes._.Rep2 (6 of 10) : Processed Fragments Chr (7 of 24), 2.089 mins elapsed.
+2024-01-08 16:55:13.106097 : Group Monocytes._.Rep2 (6 of 10) : Processed Fragments Chr (8 of 24), 2.103 mins elapsed.
+2024-01-08 16:55:14.054952 : Group Monocytes._.Rep2 (6 of 10) : Processed Fragments Chr (9 of 24), 2.119 mins elapsed.
+2024-01-08 16:55:15.10135 : Group Monocytes._.Rep2 (6 of 10) : Processed Fragments Chr (10 of 24), 2.136 mins elapsed.
+2024-01-08 16:55:15.797469 : Group Monocytes._.Rep2 (6 of 10) : Processed Fragments Chr (11 of 24), 2.148 mins elapsed.
+2024-01-08 16:55:16.950078 : Group Monocytes._.Rep2 (6 of 10) : Processed Fragments Chr (12 of 24), 2.167 mins elapsed.
+2024-01-08 16:55:18.063961 : Group Monocytes._.Rep2 (6 of 10) : Processed Fragments Chr (13 of 24), 2.186 mins elapsed.
+2024-01-08 16:55:18.857525 : Group Monocytes._.Rep2 (6 of 10) : Processed Fragments Chr (14 of 24), 2.199 mins elapsed.
+2024-01-08 16:55:19.555289 : Group Monocytes._.Rep2 (6 of 10) : Processed Fragments Chr (15 of 24), 2.21 mins elapsed.
+2024-01-08 16:55:20.31833 : Group Monocytes._.Rep2 (6 of 10) : Processed Fragments Chr (16 of 24), 2.223 mins elapsed.
+2024-01-08 16:55:21.329746 : Group Monocytes._.Rep2 (6 of 10) : Processed Fragments Chr (17 of 24), 2.24 mins elapsed.
+2024-01-08 16:55:22.200244 : Group Monocytes._.Rep2 (6 of 10) : Processed Fragments Chr (18 of 24), 2.255 mins elapsed.
+2024-01-08 16:55:23.127052 : Group Monocytes._.Rep2 (6 of 10) : Processed Fragments Chr (19 of 24), 2.27 mins elapsed.
+2024-01-08 16:55:24.138328 : Group Monocytes._.Rep2 (6 of 10) : Processed Fragments Chr (20 of 24), 2.287 mins elapsed.
+2024-01-08 16:55:25.078009 : Group Monocytes._.Rep2 (6 of 10) : Processed Fragments Chr (21 of 24), 2.302 mins elapsed.
+2024-01-08 16:55:25.944058 : Group Monocytes._.Rep2 (6 of 10) : Processed Fragments Chr (22 of 24), 2.317 mins elapsed.
+2024-01-08 16:55:26.840458 : Group Monocytes._.Rep2 (6 of 10) : Processed Fragments Chr (23 of 24), 2.332 mins elapsed.
+2024-01-08 16:55:27.599284 : Group Monocytes._.Rep2 (6 of 10) : Processed Fragments Chr (24 of 24), 2.344 mins elapsed.
+2024-01-08 16:55:28.183619 : Group NK._.Rep1 (7 of 10) : Creating Group Coverage File : NK._.Rep1.insertions.coverage.h5, 2.354 mins elapsed.
+
+2024-01-08 16:55:28.185678 : Group NK._.Rep1 (7 of 10) : cellGroupi, Class = character
+
+Group NK._.Rep1 (7 of 10) : cellGroupi: length = 500
+[1] "pbmc_sorted_10k#GTTCCTGGTTCAAGCA-1" "pbmc_sorted_10k#AAGACCAAGTTCCCAC-1"
+[3] "pbmc_sorted_10k#GGTTCCCGTACGCGCA-1" "pbmc_sorted_10k#CTTGTCCAGCACGTTG-1"
+[5] "pbmc_sorted_10k#CGCTTCTAGTTAGTTG-1" "pbmc_sorted_10k#GACGCAACAATCTCTC-1"
+
+
+
+2024-01-08 16:55:28.187487 : Number of Cells = 500
+
+2024-01-08 16:55:28.190718 : Coverage File Exists!
+
+2024-01-08 16:55:28.19282 : Added Coverage Group
+
+2024-01-08 16:55:28.1948 : Added Metadata Group
+
+2024-01-08 16:55:28.20076 : Added ArrowCoverage Class
+
+2024-01-08 16:55:28.202777 : Added Coverage/Info
+
+2024-01-08 16:55:28.210011 : Added Coverage/Info/CellNames
+2024-01-08 16:55:28.210444 : Group NK._.Rep1 (7 of 10) : Processed Fragments Chr (1 of 24), 2.355 mins elapsed.
+2024-01-08 16:55:30.055093 : Group NK._.Rep1 (7 of 10) : Processed Fragments Chr (2 of 24), 2.385 mins elapsed.
+2024-01-08 16:55:31.143032 : Group NK._.Rep1 (7 of 10) : Processed Fragments Chr (3 of 24), 2.404 mins elapsed.
+2024-01-08 16:55:32.367692 : Group NK._.Rep1 (7 of 10) : Processed Fragments Chr (4 of 24), 2.424 mins elapsed.
+2024-01-08 16:55:33.57098 : Group NK._.Rep1 (7 of 10) : Processed Fragments Chr (5 of 24), 2.444 mins elapsed.
+2024-01-08 16:55:34.377069 : Group NK._.Rep1 (7 of 10) : Processed Fragments Chr (6 of 24), 2.457 mins elapsed.
+2024-01-08 16:55:35.41376 : Group NK._.Rep1 (7 of 10) : Processed Fragments Chr (7 of 24), 2.475 mins elapsed.
+2024-01-08 16:55:36.329211 : Group NK._.Rep1 (7 of 10) : Processed Fragments Chr (8 of 24), 2.49 mins elapsed.
+2024-01-08 16:55:37.402229 : Group NK._.Rep1 (7 of 10) : Processed Fragments Chr (9 of 24), 2.508 mins elapsed.
+2024-01-08 16:55:38.722493 : Group NK._.Rep1 (7 of 10) : Processed Fragments Chr (10 of 24), 2.53 mins elapsed.
+2024-01-08 16:55:39.485763 : Group NK._.Rep1 (7 of 10) : Processed Fragments Chr (11 of 24), 2.543 mins elapsed.
+2024-01-08 16:55:41.032397 : Group NK._.Rep1 (7 of 10) : Processed Fragments Chr (12 of 24), 2.568 mins elapsed.
+2024-01-08 16:55:42.499569 : Group NK._.Rep1 (7 of 10) : Processed Fragments Chr (13 of 24), 2.593 mins elapsed.
+2024-01-08 16:55:43.400522 : Group NK._.Rep1 (7 of 10) : Processed Fragments Chr (14 of 24), 2.608 mins elapsed.
+2024-01-08 16:55:44.11423 : Group NK._.Rep1 (7 of 10) : Processed Fragments Chr (15 of 24), 2.62 mins elapsed.
+2024-01-08 16:55:44.995541 : Group NK._.Rep1 (7 of 10) : Processed Fragments Chr (16 of 24), 2.634 mins elapsed.
+2024-01-08 16:55:46.265519 : Group NK._.Rep1 (7 of 10) : Processed Fragments Chr (17 of 24), 2.656 mins elapsed.
+2024-01-08 16:55:47.292397 : Group NK._.Rep1 (7 of 10) : Processed Fragments Chr (18 of 24), 2.673 mins elapsed.
+2024-01-08 16:55:49.413317 : Group NK._.Rep1 (7 of 10) : Processed Fragments Chr (19 of 24), 2.708 mins elapsed.
+2024-01-08 16:55:50.695877 : Group NK._.Rep1 (7 of 10) : Processed Fragments Chr (20 of 24), 2.729 mins elapsed.
+2024-01-08 16:55:51.802742 : Group NK._.Rep1 (7 of 10) : Processed Fragments Chr (21 of 24), 2.748 mins elapsed.
+2024-01-08 16:55:52.75947 : Group NK._.Rep1 (7 of 10) : Processed Fragments Chr (22 of 24), 2.764 mins elapsed.
+2024-01-08 16:55:53.825902 : Group NK._.Rep1 (7 of 10) : Processed Fragments Chr (23 of 24), 2.782 mins elapsed.
+2024-01-08 16:55:54.65953 : Group NK._.Rep1 (7 of 10) : Processed Fragments Chr (24 of 24), 2.795 mins elapsed.
+2024-01-08 16:55:55.248329 : Group NK._.Rep2 (8 of 10) : Creating Group Coverage File : NK._.Rep2.insertions.coverage.h5, 2.805 mins elapsed.
+
+2024-01-08 16:55:55.249048 : Group NK._.Rep2 (8 of 10) : cellGroupi, Class = character
+
+Group NK._.Rep2 (8 of 10) : cellGroupi: length = 40
+[1] "pbmc_sorted_10k#CGTTGCAAGTCATTTC-1" "pbmc_sorted_10k#CAACAGGCAATAATGG-1"
+[3] "pbmc_sorted_10k#TATCGCACACCTGCTC-1" "pbmc_sorted_10k#TTCACTGTCTGGCTTC-1"
+[5] "pbmc_sorted_10k#ACCAGGGAGCGCCTTT-1" "pbmc_sorted_10k#GATTATGTCCCTGGAA-1"
+
+
+
+2024-01-08 16:55:55.250788 : Number of Cells = 40
+
+2024-01-08 16:55:55.254033 : Coverage File Exists!
+
+2024-01-08 16:55:55.256117 : Added Coverage Group
+
+2024-01-08 16:55:55.25809 : Added Metadata Group
+
+2024-01-08 16:55:55.264053 : Added ArrowCoverage Class
+
+2024-01-08 16:55:55.267693 : Added Coverage/Info
+
+2024-01-08 16:55:55.273801 : Added Coverage/Info/CellNames
+2024-01-08 16:55:55.27423 : Group NK._.Rep2 (8 of 10) : Processed Fragments Chr (1 of 24), 2.806 mins elapsed.
+2024-01-08 16:55:56.598922 : Group NK._.Rep2 (8 of 10) : Processed Fragments Chr (2 of 24), 2.828 mins elapsed.
+2024-01-08 16:55:57.503407 : Group NK._.Rep2 (8 of 10) : Processed Fragments Chr (3 of 24), 2.843 mins elapsed.
+2024-01-08 16:55:58.481597 : Group NK._.Rep2 (8 of 10) : Processed Fragments Chr (4 of 24), 2.859 mins elapsed.
+2024-01-08 16:55:59.457387 : Group NK._.Rep2 (8 of 10) : Processed Fragments Chr (5 of 24), 2.875 mins elapsed.
+2024-01-08 16:56:00.195459 : Group NK._.Rep2 (8 of 10) : Processed Fragments Chr (6 of 24), 2.888 mins elapsed.
+2024-01-08 16:56:01.039933 : Group NK._.Rep2 (8 of 10) : Processed Fragments Chr (7 of 24), 2.902 mins elapsed.
+2024-01-08 16:56:01.852031 : Group NK._.Rep2 (8 of 10) : Processed Fragments Chr (8 of 24), 2.915 mins elapsed.
+2024-01-08 16:56:02.756282 : Group NK._.Rep2 (8 of 10) : Processed Fragments Chr (9 of 24), 2.93 mins elapsed.
+2024-01-08 16:56:03.80462 : Group NK._.Rep2 (8 of 10) : Processed Fragments Chr (10 of 24), 2.948 mins elapsed.
+2024-01-08 16:56:04.500594 : Group NK._.Rep2 (8 of 10) : Processed Fragments Chr (11 of 24), 2.96 mins elapsed.
+2024-01-08 16:56:05.611056 : Group NK._.Rep2 (8 of 10) : Processed Fragments Chr (12 of 24), 2.978 mins elapsed.
+2024-01-08 16:56:06.71894 : Group NK._.Rep2 (8 of 10) : Processed Fragments Chr (13 of 24), 2.996 mins elapsed.
+2024-01-08 16:56:07.507461 : Group NK._.Rep2 (8 of 10) : Processed Fragments Chr (14 of 24), 3.01 mins elapsed.
+2024-01-08 16:56:08.171132 : Group NK._.Rep2 (8 of 10) : Processed Fragments Chr (15 of 24), 3.021 mins elapsed.
+2024-01-08 16:56:08.956471 : Group NK._.Rep2 (8 of 10) : Processed Fragments Chr (16 of 24), 3.034 mins elapsed.
+2024-01-08 16:56:09.962488 : Group NK._.Rep2 (8 of 10) : Processed Fragments Chr (17 of 24), 3.051 mins elapsed.
+2024-01-08 16:56:10.814318 : Group NK._.Rep2 (8 of 10) : Processed Fragments Chr (18 of 24), 3.065 mins elapsed.
+2024-01-08 16:56:11.735845 : Group NK._.Rep2 (8 of 10) : Processed Fragments Chr (19 of 24), 3.08 mins elapsed.
+2024-01-08 16:56:12.742278 : Group NK._.Rep2 (8 of 10) : Processed Fragments Chr (20 of 24), 3.097 mins elapsed.
+2024-01-08 16:56:13.677763 : Group NK._.Rep2 (8 of 10) : Processed Fragments Chr (21 of 24), 3.112 mins elapsed.
+2024-01-08 16:56:14.531406 : Group NK._.Rep2 (8 of 10) : Processed Fragments Chr (22 of 24), 3.127 mins elapsed.
+2024-01-08 16:56:15.42257 : Group NK._.Rep2 (8 of 10) : Processed Fragments Chr (23 of 24), 3.142 mins elapsed.
+2024-01-08 16:56:16.18011 : Group NK._.Rep2 (8 of 10) : Processed Fragments Chr (24 of 24), 3.154 mins elapsed.
+2024-01-08 16:56:16.806043 : Group T_cells._.Rep1 (9 of 10) : Creating Group Coverage File : T_cells._.Rep1.insertions.coverage.h5, 3.165 mins elapsed.
+
+2024-01-08 16:56:16.808172 : Group T_cells._.Rep1 (9 of 10) : cellGroupi, Class = character
+
+Group T_cells._.Rep1 (9 of 10) : cellGroupi: length = 500
+[1] "pbmc_sorted_10k#CCGTTACTCGAGCAAA-1" "pbmc_sorted_10k#GTTGCGGGTGCTCACC-1"
+[3] "pbmc_sorted_10k#ATAACGACACTAAGTT-1" "pbmc_sorted_10k#TCGTGCTTCTTGCTAT-1"
+[5] "pbmc_sorted_10k#ACTTGCACAATTGAAG-1" "pbmc_sorted_10k#GTCTATCGTCAGTAAT-1"
+
+
+
+2024-01-08 16:56:16.809986 : Number of Cells = 500
+
+2024-01-08 16:56:16.813126 : Coverage File Exists!
+
+2024-01-08 16:56:16.815266 : Added Coverage Group
+
+2024-01-08 16:56:16.817319 : Added Metadata Group
+
+2024-01-08 16:56:16.823321 : Added ArrowCoverage Class
+
+2024-01-08 16:56:16.825401 : Added Coverage/Info
+
+2024-01-08 16:56:16.832725 : Added Coverage/Info/CellNames
+2024-01-08 16:56:16.833198 : Group T_cells._.Rep1 (9 of 10) : Processed Fragments Chr (1 of 24), 3.165 mins elapsed.
+2024-01-08 16:56:18.694954 : Group T_cells._.Rep1 (9 of 10) : Processed Fragments Chr (2 of 24), 3.196 mins elapsed.
+2024-01-08 16:56:19.821419 : Group T_cells._.Rep1 (9 of 10) : Processed Fragments Chr (3 of 24), 3.215 mins elapsed.
+2024-01-08 16:56:21.058086 : Group T_cells._.Rep1 (9 of 10) : Processed Fragments Chr (4 of 24), 3.235 mins elapsed.
+2024-01-08 16:56:22.286789 : Group T_cells._.Rep1 (9 of 10) : Processed Fragments Chr (5 of 24), 3.256 mins elapsed.
+2024-01-08 16:56:23.098461 : Group T_cells._.Rep1 (9 of 10) : Processed Fragments Chr (6 of 24), 3.269 mins elapsed.
+2024-01-08 16:56:24.143013 : Group T_cells._.Rep1 (9 of 10) : Processed Fragments Chr (7 of 24), 3.287 mins elapsed.
+2024-01-08 16:56:25.074884 : Group T_cells._.Rep1 (9 of 10) : Processed Fragments Chr (8 of 24), 3.302 mins elapsed.
+2024-01-08 16:56:26.163367 : Group T_cells._.Rep1 (9 of 10) : Processed Fragments Chr (9 of 24), 3.321 mins elapsed.
+2024-01-08 16:56:27.500015 : Group T_cells._.Rep1 (9 of 10) : Processed Fragments Chr (10 of 24), 3.343 mins elapsed.
+2024-01-08 16:56:28.26692 : Group T_cells._.Rep1 (9 of 10) : Processed Fragments Chr (11 of 24), 3.356 mins elapsed.
+2024-01-08 16:56:29.801238 : Group T_cells._.Rep1 (9 of 10) : Processed Fragments Chr (12 of 24), 3.381 mins elapsed.
+2024-01-08 16:56:32.303916 : Group T_cells._.Rep1 (9 of 10) : Processed Fragments Chr (13 of 24), 3.423 mins elapsed.
+2024-01-08 16:56:33.180971 : Group T_cells._.Rep1 (9 of 10) : Processed Fragments Chr (14 of 24), 3.438 mins elapsed.
+2024-01-08 16:56:33.904204 : Group T_cells._.Rep1 (9 of 10) : Processed Fragments Chr (15 of 24), 3.45 mins elapsed.
+2024-01-08 16:56:34.792781 : Group T_cells._.Rep1 (9 of 10) : Processed Fragments Chr (16 of 24), 3.464 mins elapsed.
+2024-01-08 16:56:36.0683 : Group T_cells._.Rep1 (9 of 10) : Processed Fragments Chr (17 of 24), 3.486 mins elapsed.
+2024-01-08 16:56:37.053705 : Group T_cells._.Rep1 (9 of 10) : Processed Fragments Chr (18 of 24), 3.502 mins elapsed.
+2024-01-08 16:56:38.158645 : Group T_cells._.Rep1 (9 of 10) : Processed Fragments Chr (19 of 24), 3.52 mins elapsed.
+2024-01-08 16:56:39.416037 : Group T_cells._.Rep1 (9 of 10) : Processed Fragments Chr (20 of 24), 3.541 mins elapsed.
+2024-01-08 16:56:40.522155 : Group T_cells._.Rep1 (9 of 10) : Processed Fragments Chr (21 of 24), 3.56 mins elapsed.
+2024-01-08 16:56:41.48758 : Group T_cells._.Rep1 (9 of 10) : Processed Fragments Chr (22 of 24), 3.576 mins elapsed.
+2024-01-08 16:56:42.520472 : Group T_cells._.Rep1 (9 of 10) : Processed Fragments Chr (23 of 24), 3.593 mins elapsed.
+2024-01-08 16:56:43.356352 : Group T_cells._.Rep1 (9 of 10) : Processed Fragments Chr (24 of 24), 3.607 mins elapsed.
+2024-01-08 16:56:43.943482 : Group T_cells._.Rep2 (10 of 10) : Creating Group Coverage File : T_cells._.Rep2.insertions.coverage.h5, 3.617 mins elapsed.
+
+2024-01-08 16:56:43.944242 : Group T_cells._.Rep2 (10 of 10) : cellGroupi, Class = character
+
+Group T_cells._.Rep2 (10 of 10) : cellGroupi: length = 40
+[1] "pbmc_sorted_10k#CCTGTAACATTAAGTC-1" "pbmc_sorted_10k#GATTGGTTCATTTGTC-1"
+[3] "pbmc_sorted_10k#GCAGGAAGTCATAGAT-1" "pbmc_sorted_10k#CATAAGCTCGTCATTT-1"
+[5] "pbmc_sorted_10k#AGTCAAGAGGAAACTG-1" "pbmc_sorted_10k#TTCAGCACACCATATG-1"
+
+
+
+2024-01-08 16:56:43.945981 : Number of Cells = 40
+
+2024-01-08 16:56:43.949213 : Coverage File Exists!
+
+2024-01-08 16:56:43.95128 : Added Coverage Group
+
+2024-01-08 16:56:43.953282 : Added Metadata Group
+
+2024-01-08 16:56:43.95927 : Added ArrowCoverage Class
+
+2024-01-08 16:56:43.96129 : Added Coverage/Info
+
+2024-01-08 16:56:43.967333 : Added Coverage/Info/CellNames
+2024-01-08 16:56:43.967743 : Group T_cells._.Rep2 (10 of 10) : Processed Fragments Chr (1 of 24), 3.617 mins elapsed.
+2024-01-08 16:56:45.279372 : Group T_cells._.Rep2 (10 of 10) : Processed Fragments Chr (2 of 24), 3.639 mins elapsed.
+2024-01-08 16:56:46.18093 : Group T_cells._.Rep2 (10 of 10) : Processed Fragments Chr (3 of 24), 3.654 mins elapsed.
+2024-01-08 16:56:47.15962 : Group T_cells._.Rep2 (10 of 10) : Processed Fragments Chr (4 of 24), 3.67 mins elapsed.
+2024-01-08 16:56:48.132984 : Group T_cells._.Rep2 (10 of 10) : Processed Fragments Chr (5 of 24), 3.687 mins elapsed.
+2024-01-08 16:56:48.870836 : Group T_cells._.Rep2 (10 of 10) : Processed Fragments Chr (6 of 24), 3.699 mins elapsed.
+2024-01-08 16:56:49.718802 : Group T_cells._.Rep2 (10 of 10) : Processed Fragments Chr (7 of 24), 3.713 mins elapsed.
+2024-01-08 16:56:50.527802 : Group T_cells._.Rep2 (10 of 10) : Processed Fragments Chr (8 of 24), 3.727 mins elapsed.
+2024-01-08 16:56:51.432962 : Group T_cells._.Rep2 (10 of 10) : Processed Fragments Chr (9 of 24), 3.742 mins elapsed.
+2024-01-08 16:56:52.522864 : Group T_cells._.Rep2 (10 of 10) : Processed Fragments Chr (10 of 24), 3.76 mins elapsed.
+2024-01-08 16:56:53.216857 : Group T_cells._.Rep2 (10 of 10) : Processed Fragments Chr (11 of 24), 3.771 mins elapsed.
+2024-01-08 16:56:54.329346 : Group T_cells._.Rep2 (10 of 10) : Processed Fragments Chr (12 of 24), 3.79 mins elapsed.
+2024-01-08 16:56:55.480101 : Group T_cells._.Rep2 (10 of 10) : Processed Fragments Chr (13 of 24), 3.809 mins elapsed.
+2024-01-08 16:56:56.267737 : Group T_cells._.Rep2 (10 of 10) : Processed Fragments Chr (14 of 24), 3.822 mins elapsed.
+2024-01-08 16:56:56.932743 : Group T_cells._.Rep2 (10 of 10) : Processed Fragments Chr (15 of 24), 3.833 mins elapsed.
+2024-01-08 16:56:57.729749 : Group T_cells._.Rep2 (10 of 10) : Processed Fragments Chr (16 of 24), 3.847 mins elapsed.
+2024-01-08 16:56:58.73789 : Group T_cells._.Rep2 (10 of 10) : Processed Fragments Chr (17 of 24), 3.863 mins elapsed.
+2024-01-08 16:56:59.590498 : Group T_cells._.Rep2 (10 of 10) : Processed Fragments Chr (18 of 24), 3.878 mins elapsed.
+2024-01-08 16:57:00.532245 : Group T_cells._.Rep2 (10 of 10) : Processed Fragments Chr (19 of 24), 3.893 mins elapsed.
+2024-01-08 16:57:01.543524 : Group T_cells._.Rep2 (10 of 10) : Processed Fragments Chr (20 of 24), 3.91 mins elapsed.
+2024-01-08 16:57:02.477532 : Group T_cells._.Rep2 (10 of 10) : Processed Fragments Chr (21 of 24), 3.926 mins elapsed.
+2024-01-08 16:57:03.340536 : Group T_cells._.Rep2 (10 of 10) : Processed Fragments Chr (22 of 24), 3.94 mins elapsed.
+2024-01-08 16:57:04.237661 : Group T_cells._.Rep2 (10 of 10) : Processed Fragments Chr (23 of 24), 3.955 mins elapsed.
+2024-01-08 16:57:04.998066 : Group T_cells._.Rep2 (10 of 10) : Processed Fragments Chr (24 of 24), 3.968 mins elapsed.
+
+2024-01-08 16:57:05.589719 : kmerBias-Parameters, Class = list
+
+kmerBias-Parameters$: length = 1
+                       
+1 function (name)      
+2 .Internal(args(name))
+
+
+kmerBias-Parameters$genome: length = 1
+[1] "BSgenome.Hsapiens.UCSC.hg38"
+
+
+kmerBias-Parameters$kmerLength: length = 1
+[1] 6
+
+
+kmerBias-Parameters$threads: length = 1
+[1] 1
+
+
+kmerBias-Parameters$verbose: length = 1
+[1] FALSE
+
+
+kmerBias-Parameters$tstart: length = 0
+NULL
+
+
+kmerBias-Parameters$logFile: length = 1
+[1] "ArchRLogs/ArchR-addGroupCoverages-9a1121db3c5dc-Date-2024-01-08_Time-16-53-06.929641.log"
+
+

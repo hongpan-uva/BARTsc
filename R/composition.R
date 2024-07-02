@@ -1,6 +1,6 @@
 #' run BART geneset mode
 #'
-#' This function run BART geneset mode. Input could be a pre-created Bart
+#' This function run BART geneset mode. Input could be a pre-created bart
 #' object, or be set by specifying name, genome and symbol_list
 #'
 #' @param object a BART object with valid geneset data
@@ -9,29 +9,40 @@
 #' @param symbol_list a vector of gene symbols, check the internal data B_cell_gene as an example
 #' @param gene_mode_param a list of costumized arguments for gene mode
 #'
-#' @return A Bart object
+#' @return A bart object
 #'
 #' @export
 #'
-#' @examples
-#' bart_obj <- Bart("B_cell_gene", "hg38", gene_data = B_cell_gene)
-#' bart_obj <- runBartGeneSet(bart_obj)
-#'
-#' bart_obj <- runBartGeneSet("B_cell_gene", "hg38", B_cell_gene)
 runBartGeneSet <- function(object, name, genome, symbol_list = NULL,
-                           gene_mode_param = list(binsize = 1000)) {
+                           gene_mode_param = list(binsize = 1000), reserve_interm = FALSE) {
     if (missing(object)) {
-        object <- Bart(name, genome, gene_data = symbol_list)
+        object <- bart(name, genome,
+            gene_data = symbol_list,
+            gene_mode_param = gene_mode_param
+        )
     }
     object <- runMarge(object)
     object <- identifyEnhancer(object)
-    object <- predictTF(object, mode = "geneset")
+
+    profile_1 <- unlist(object@intermediate[["Marge_based"]][["predicted_enhancers"]])
+
+    # # keep the score of top n and bottom n
+    # n_top <- 2000
+    # n_bottom <- 0
+    # profile_1[(n_top + 1):(length(profile_1) - n_bottom)] <- 0
+    # object@intermediate[["Marge_based"]][["predicted_enhancers"]] <- as.list(profile_1)
+    # object@intermediate[["Marge_based"]][["predicted_enhancers_rank"]] <- profile_1 %>%
+    #     unlist() %>%
+    #     sort(decreasing = TRUE) %>%
+    #     names()
+
+    object <- predictTF(object, mode = "geneset", reserve_interm)
     return(object)
 }
 
 #' run BART region mode
 #'
-#' This function run BART region mode. Input could be a pre-created Bart
+#' This function run BART region mode. Input could be a pre-created bart
 #' object, or be set by specifying name, genome and region_list
 #'
 #' @param object a BART object with valid region data
@@ -40,21 +51,90 @@ runBartGeneSet <- function(object, name, genome, symbol_list = NULL,
 #' @param region_list a dataframe that follows a BED6 format, check the internal data B_cell_region as an example
 #' @param region_mode_param a list of costumized arguments for region mode
 #'
-#' @return A Bart object
+#' @return A bart object
 #'
 #' @export
 #'
-#' @examples
-#' bart_obj <- Bart("B_cell_region", "hg38", region_data = B_cell_region)
-#' bart_obj <- runBartRegion(bart_obj)
-#'
-#' bart_obj <- runBartRegion("B_cell_region", "hg38", B_cell_region)
 runBartRegion <- function(object, name, genome, region_list = NULL,
-                          gene_mode_param = list(binsize = 1000)) {
+                          region_mode_param = list(binsize = 50, scorecol = 5),
+                          reserve_interm = FALSE) {
     if (missing(object)) {
-        object <- Bart(name, genome, region_data = region_list)
+        object <- bart(name, genome,
+            region_data = region_list,
+            region_mode_param = region_mode_param
+        )
     }
     object <- mapRegionScore(object)
-    object <- predictTF(object, mode = "region")
+    object <- predictTF(object, mode = "region", reserve_interm)
+    return(object)
+}
+
+#' @import mgcv
+#' @import gratia
+runBartBimodal <- function(object, name, genome, symbol_list = NULL, region_list = NULL,
+                           gene_mode_param = list(binsize = 1000),
+                           region_mode_param = list(binsize = 50, scorecol = 5),
+                           bimodal_mode_param = list(
+                               binsize = 50
+                           ),
+                           reserve_interm = FALSE) {
+    DFLT_INT_NUM <- 1000
+
+    if (missing(object)) {
+        object <- bart(name, genome,
+            gene_data = symbol_list, region_data = region_list,
+            gene_mode_param = gene_mode_param,
+            region_mode_param = region_mode_param,
+            bimodal_mode_param = bimodal_mode_param
+        )
+    }
+    object <- runMarge(object)
+    object <- identifyEnhancer(object)
+    object <- mapRegionScore(object)
+
+    udhs_RNA_ordered <- object@intermediate$Marge_based$predicted_enhancers_rank
+    udhs_ATAC_ordered <- object@intermediate$region_based$overlapped_enhancers_rank
+
+    udhs_ATAC_score <- object@intermediate$region_based$overlapped_enhancers
+    n_positive <- length(udhs_ATAC_score[which(udhs_ATAC_score > 0)])
+
+    overlap_count <- sapply(seq(0, n_positive, by = 10), function(x) {
+        intersect(udhs_RNA_ordered[1:x], udhs_ATAC_ordered[1:x]) %>%
+            length() %>%
+            return()
+    })
+
+    df <- data.frame(top_sites_included = seq(0, n_positive, by = 10), overlap_count)
+    colnames(df) <- c("x", "y")
+    use_default <- FALSE
+    out <- tryCatch(
+        {
+            gam_model <- mgcv::gam(formula = y ~ s(x, bs = "cs"), data = df, method = "REML")
+            deriv_df <- gratia::derivatives(gam_model)
+            integ_num <- round(deriv_df$data[which.max(deriv_df$derivative)])
+            if (integ_num >= DFLT_INT_NUM) {
+                message(paste(object@meta$name, "top udhs included:", integ_num))
+            } else {
+                message(paste(object@meta$name, "optimized integration number too small:", integ_num))
+                integ_num <- DFLT_INT_NUM
+                message(paste("Use default value", integ_num))
+            }
+        },
+        error = function(cond) {
+            message(paste("failed to find optimized integration number for ", object@meta$name))
+            message(paste("Use default value", DFLT_INT_NUM))
+            return("use default")
+        }
+    )
+
+    if (!is.null(out)) {
+        integ_num <- DFLT_INT_NUM
+    }
+
+    object <- combineModsByTopRank(object, n_valid = integ_num, method = "geom.mean")
+    # object <- combineModsBySign(object)
+    # object <- combineModsByProduct(object, ATAC_weight = 1)
+    # object <- refineRNAWithATAC(object)
+    object <- predictTF(object, "bimodal", reserve_interm)
     return(object)
 }

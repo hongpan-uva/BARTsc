@@ -1,0 +1,523 @@
+
+           ___      .______        ______  __    __  .______      
+          /   \     |   _  \      /      ||  |  |  | |   _  \     
+         /  ^  \    |  |_)  |    |  ,----'|  |__|  | |  |_)  |    
+        /  /_\  \   |      /     |  |     |   __   | |      /     
+       /  _____  \  |  |\  \\___ |  `----.|  |  |  | |  |\  \\___.
+      /__/     \__\ | _| `._____| \______||__|  |__| | _| `._____|
+    
+Logging With ArchR!
+
+Start Time : 2024-05-10 15:38:43.691105
+
+------- ArchR Info
+
+ArchRThreads = 20
+
+------- System Info
+
+Computer OS = unix
+Total Cores = 40
+
+------- Session Info
+
+R version 4.3.1 (2023-06-16)
+Platform: x86_64-pc-linux-gnu (64-bit)
+Running under: Rocky Linux 8.7 (Green Obsidian)
+
+Matrix products: default
+BLAS/LAPACK: /sfs/applications/202312/software/standard/compiler/gcc/11.4.0/openblas/0.3.21/lib/libopenblas_sandybridgep-r0.3.21.so;  LAPACK version 3.9.0
+
+Random number generation:
+ RNG:     L'Ecuyer-CMRG 
+ Normal:  Inversion 
+ Sample:  Rejection 
+ 
+locale:
+ [1] LC_CTYPE=en_US.UTF-8       LC_NUMERIC=C              
+ [3] LC_TIME=en_US.UTF-8        LC_COLLATE=en_US.UTF-8    
+ [5] LC_MONETARY=en_US.UTF-8    LC_MESSAGES=en_US.UTF-8   
+ [7] LC_PAPER=en_US.UTF-8       LC_NAME=C                 
+ [9] LC_ADDRESS=C               LC_TELEPHONE=C            
+[11] LC_MEASUREMENT=en_US.UTF-8 LC_IDENTIFICATION=C       
+
+time zone: America/New_York
+tzcode source: system (glibc)
+
+attached base packages:
+[1] stats4    grid      stats     graphics  grDevices utils     datasets 
+[8] methods   base     
+
+other attached packages:
+ [1] rhdf5_2.46.1                SummarizedExperiment_1.32.0
+ [3] Biobase_2.62.0              MatrixGenerics_1.14.0      
+ [5] Rcpp_1.0.12                 Matrix_1.6-4               
+ [7] GenomicRanges_1.54.1        GenomeInfoDb_1.38.5        
+ [9] IRanges_2.36.0              S4Vectors_0.40.2           
+[11] BiocGenerics_0.48.1         matrixStats_1.2.0          
+[13] data.table_1.14.10          stringr_1.5.1              
+[15] plyr_1.8.9                  magrittr_2.0.3             
+[17] ggplot2_3.5.0               gtable_0.3.4               
+[19] gtools_3.9.5                gridExtra_2.3              
+[21] ArchR_1.0.2                 Seurat_5.0.1               
+[23] SeuratObject_5.0.1          sp_2.1-1                   
+[25] BARTsc_0.0.0.9000           testthat_3.2.0             
+[27] devtools_2.4.5              usethis_2.2.2              
+
+loaded via a namespace (and not attached):
+  [1] RcppAnnoy_0.0.21        splines_4.3.1           later_1.3.2            
+  [4] bitops_1.0-7            tibble_3.2.1            polyclip_1.10-6        
+  [7] fastDummies_1.7.3       lifecycle_1.0.4         rprojroot_2.0.4        
+ [10] globals_0.16.2          lattice_0.22-5          MASS_7.3-60            
+ [13] plotly_4.10.3           remotes_2.5.0           httpuv_1.6.13          
+ [16] sctransform_0.4.1       spam_2.10-0             sessioninfo_1.2.2      
+ [19] pkgbuild_1.4.3          spatstat.sparse_3.0-3   reticulate_1.34.0      
+ [22] cowplot_1.1.2           pbapply_1.7-2           RColorBrewer_1.1-3     
+ [25] abind_1.4-5             pkgload_1.3.3           zlibbioc_1.48.0        
+ [28] Rtsne_0.17              purrr_1.0.2             presto_1.0.0           
+ [31] RCurl_1.98-1.14         rappdirs_0.3.3          GenomeInfoDbData_1.2.11
+ [34] ggrepel_0.9.4           irlba_2.3.5.1           listenv_0.9.0          
+ [37] spatstat.utils_3.0-4    goftest_1.2-3           RSpectra_0.16-1        
+ [40] spatstat.random_3.2-2   fitdistrplus_1.1-11     parallelly_1.36.0      
+ [43] leiden_0.4.3.1          codetools_0.2-19        DelayedArray_0.28.0    
+ [46] tidyselect_1.2.0        spatstat.explore_3.2-5  jsonlite_1.8.8         
+ [49] ellipsis_0.3.2          progressr_0.14.0        ggridges_0.5.5         
+ [52] survival_3.5-7          RobustRankAggreg_1.2.1  tools_4.3.1            
+ [55] ica_1.0-3               glue_1.6.2              SparseArray_1.2.3      
+ [58] mgcv_1.9-0              mvnfast_0.2.8           dplyr_1.1.4            
+ [61] withr_2.5.2             combinat_0.0-8          fastmap_1.1.1          
+ [64] rhdf5filters_1.14.1     fansi_1.0.6             digest_0.6.33          
+ [67] R6_2.5.1                mime_0.12               colorspace_2.1-0       
+ [70] Cairo_1.6-2             scattermore_1.2         tensor_1.5             
+ [73] spatstat.data_3.0-3     utf8_1.2.4              tidyr_1.3.0            
+ [76] generics_0.1.3          httr_1.4.7              htmlwidgets_1.6.4      
+ [79] S4Arrays_1.2.0          uwot_0.1.16             pkgconfig_2.0.3        
+ [82] lmtest_0.9-40           XVector_0.42.0          brio_1.1.3             
+ [85] htmltools_0.5.7         profvis_0.3.8           dotCall64_1.1-0        
+ [88] scales_1.3.0            png_0.1-8               ggdendro_0.1.23        
+ [91] rstudioapi_0.15.0       reshape2_1.4.4          nlme_3.1-163           
+ [94] cachem_1.0.8            zoo_1.8-12              KernSmooth_2.23-22     
+ [97] parallel_4.3.1          miniUI_0.1.1.1          desc_1.4.3             
+[100] pillar_1.9.0            vctrs_0.6.5             RANN_2.6.1             
+[103] urlchecker_1.0.1        promises_1.2.1          gratia_0.8.2           
+[106] xtable_1.8-4            cluster_2.1.6           cli_3.6.2              
+[109] compiler_4.3.1          rlang_1.1.2             crayon_1.5.2           
+[112] future.apply_1.11.1     fs_1.6.3                stringi_1.8.3          
+[115] viridisLite_0.4.2       deldir_1.0-9            munsell_0.5.0          
+[118] lazyeval_0.2.2          spatstat.geom_3.2-7     RcppHNSW_0.5.0         
+[121] patchwork_1.2.0         future_1.33.1           Rhdf5lib_1.24.1        
+[124] shiny_1.8.0             ROCR_1.0-11             igraph_2.0.2           
+[127] memoise_2.0.1          
+
+
+------- Log Info
+
+
+2024-05-10 15:38:43.795357 : getMatrixFromProject Input-Parameters, Class = list
+
+getMatrixFromProject Input-Parameters$ArchRProj: length = 1
+
+getMatrixFromProject Input-Parameters$useMatrix: length = 1
+[1] "PeakMatrix"
+
+
+getMatrixFromProject Input-Parameters$useSeqnames: length = 0
+NULL
+
+
+getMatrixFromProject Input-Parameters$verbose: length = 1
+[1] TRUE
+
+
+getMatrixFromProject Input-Parameters$binarize: length = 1
+[1] FALSE
+
+
+getMatrixFromProject Input-Parameters$threads: length = 1
+[1] 20
+
+
+getMatrixFromProject Input-Parameters$logFile: length = 1
+[1] "ArchRLogs/ArchR-getMatrixFromProject-1525b6c392d26-Date-2024-05-10_Time-15-38-43.578031.log"
+
+
+2024-05-10 15:38:51.929256 : Reading PeakMatrix : WT(1 of 4), 0.139 mins elapsed.
+2024-05-10 15:38:52.011387 : Reading PeakMatrix : Tle34KO(2 of 4), 0.141 mins elapsed.
+2024-05-10 15:38:52.082639 : Reading PeakMatrix : Runx1KO(3 of 4), 0.142 mins elapsed.
+
+2024-05-10 15:38:52.149962 : getMatrixFromArrow Input-Parameters, Class = list
+
+getMatrixFromArrow Input-Parameters$ArrowFile: length = 1
+                                                                                                                            WT 
+"/sfs/gpfs/tardis/project/zanglab_project/hz9fq/BARTsc_project/ArchR_workspace/DN1_scATAC/ArchR/SaveDN1_4/ArrowFiles/WT.arrow" 
+
+
+getMatrixFromArrow Input-Parameters$useMatrix: length = 1
+[1] "PeakMatrix"
+
+
+getMatrixFromArrow Input-Parameters$useSeqnames: length = 0
+NULL
+
+
+getMatrixFromArrow Input-Parameters$cellNames: length = 6554
+[1] "WT#AACAAAGCAACACGGA-1" "WT#GCTTGCTTCTCGGCGA-1" "WT#CTGCGTTCACTGAAGG-1"
+[4] "WT#CCCTCTCCAGATAAGT-1" "WT#TTGCGGGTCAACACGT-1" "WT#TTTGGTTCAGGTCCTG-1"
+
+
+getMatrixFromArrow Input-Parameters$ArchRProj: length = 1
+
+getMatrixFromArrow Input-Parameters$verbose: length = 1
+[1] FALSE
+
+
+getMatrixFromArrow Input-Parameters$binarize: length = 1
+[1] FALSE
+
+
+getMatrixFromArrow Input-Parameters$logFile: length = 1
+[1] "ArchRLogs/ArchR-getMatrixFromProject-1525b6c392d26-Date-2024-05-10_Time-15-38-43.578031.log"
+
+
+
+2024-05-10 15:38:52.190882 : getMatrixFromArrow Input-Parameters, Class = list
+
+getMatrixFromArrow Input-Parameters$ArrowFile: length = 1
+                                                                                                                            Tle34KO 
+"/sfs/gpfs/tardis/project/zanglab_project/hz9fq/BARTsc_project/ArchR_workspace/DN1_scATAC/ArchR/SaveDN1_4/ArrowFiles/Tle34KO.arrow" 
+
+
+getMatrixFromArrow Input-Parameters$useMatrix: length = 1
+[1] "PeakMatrix"
+
+
+getMatrixFromArrow Input-Parameters$useSeqnames: length = 0
+NULL
+
+
+getMatrixFromArrow Input-Parameters$cellNames: length = 6324
+[1] "Tle34KO#TGTGGCGTCACTGATG-1" "Tle34KO#CAGTATGAGAGCTGTG-1"
+[3] "Tle34KO#GGTGCTGGTAGTCTGT-1" "Tle34KO#AGTCCGGAGACGCCAA-1"
+[5] "Tle34KO#GCACCTTCACACTAGT-1" "Tle34KO#CTAACTTTCCTATCCG-1"
+
+
+getMatrixFromArrow Input-Parameters$ArchRProj: length = 1
+
+getMatrixFromArrow Input-Parameters$verbose: length = 1
+[1] FALSE
+
+
+getMatrixFromArrow Input-Parameters$binarize: length = 1
+[1] FALSE
+
+
+getMatrixFromArrow Input-Parameters$logFile: length = 1
+[1] "ArchRLogs/ArchR-getMatrixFromProject-1525b6c392d26-Date-2024-05-10_Time-15-38-43.578031.log"
+
+
+
+2024-05-10 15:38:52.229306 : getMatrixFromArrow Input-Parameters, Class = list
+
+getMatrixFromArrow Input-Parameters$ArrowFile: length = 1
+                                                                                                                            Runx1KO 
+"/sfs/gpfs/tardis/project/zanglab_project/hz9fq/BARTsc_project/ArchR_workspace/DN1_scATAC/ArchR/SaveDN1_4/ArrowFiles/Runx1KO.arrow" 
+
+
+getMatrixFromArrow Input-Parameters$useMatrix: length = 1
+[1] "PeakMatrix"
+
+
+getMatrixFromArrow Input-Parameters$useSeqnames: length = 0
+NULL
+
+
+getMatrixFromArrow Input-Parameters$cellNames: length = 3669
+[1] "Runx1KO#TAATCGGTCAGCCGAC-1" "Runx1KO#GAAGTGGTCAGGTCTA-1"
+[3] "Runx1KO#CACTAAGTCTTTGCAT-1" "Runx1KO#AAACTCGAGATCTCAC-1"
+[5] "Runx1KO#TCTATTGGTGTCGTGC-1" "Runx1KO#TCGCAGGAGTCCAGAG-1"
+
+
+getMatrixFromArrow Input-Parameters$ArchRProj: length = 1
+
+getMatrixFromArrow Input-Parameters$verbose: length = 1
+[1] FALSE
+
+
+getMatrixFromArrow Input-Parameters$binarize: length = 1
+[1] FALSE
+
+
+getMatrixFromArrow Input-Parameters$logFile: length = 1
+[1] "ArchRLogs/ArchR-getMatrixFromProject-1525b6c392d26-Date-2024-05-10_Time-15-38-43.578031.log"
+
+
+2024-05-10 15:38:52.263369 : Reading PeakMatrix : Tcf1Lef1dKO(4 of 4), 0.145 mins elapsed.
+
+2024-05-10 15:38:52.30583 : getMatrixFromArrow Input-Parameters, Class = list
+
+getMatrixFromArrow Input-Parameters$ArrowFile: length = 1
+                                                                                                                            Tcf1Lef1dKO 
+"/sfs/gpfs/tardis/project/zanglab_project/hz9fq/BARTsc_project/ArchR_workspace/DN1_scATAC/ArchR/SaveDN1_4/ArrowFiles/Tcf1Lef1dKO.arrow" 
+
+
+getMatrixFromArrow Input-Parameters$useMatrix: length = 1
+[1] "PeakMatrix"
+
+
+getMatrixFromArrow Input-Parameters$useSeqnames: length = 0
+NULL
+
+
+getMatrixFromArrow Input-Parameters$cellNames: length = 2218
+[1] "Tcf1Lef1dKO#CATGCCTGTCCATTGA-1" "Tcf1Lef1dKO#GGTGTCGGTTTGTCTT-1"
+[3] "Tcf1Lef1dKO#GATTGACCAGTGCTCG-1" "Tcf1Lef1dKO#GCAACCGTCCAGGCCA-1"
+[5] "Tcf1Lef1dKO#TAATTCCAGTTACACC-1" "Tcf1Lef1dKO#ACGTGGCCAATTCGTG-1"
+
+
+getMatrixFromArrow Input-Parameters$ArchRProj: length = 1
+
+getMatrixFromArrow Input-Parameters$verbose: length = 1
+[1] FALSE
+
+
+getMatrixFromArrow Input-Parameters$binarize: length = 1
+[1] FALSE
+
+
+getMatrixFromArrow Input-Parameters$logFile: length = 1
+[1] "ArchRLogs/ArchR-getMatrixFromProject-1525b6c392d26-Date-2024-05-10_Time-15-38-43.578031.log"
+
+
+
+2024-05-10 15:38:53.214843 : featureDF WT, Class = DFrame
+DataFrame with 223071 rows and 4 columns
+       seqnames     idx     start       end
+          <Rle> <array>   <array>   <array>
+1          chr1       1   3445826   3446326
+2          chr1       2   3670598   3671098
+3          chr1       3   3671475   3671975
+4          chr1       4   4332431   4332931
+5          chr1       5   4405712   4406212
+...         ...     ...       ...       ...
+223067     chrX    4016 169880160 169880660
+223068     chrX    4017 169880772 169881272
+223069     chrX    4018 169883815 169884315
+223070     chrX    4019 169892566 169893066
+223071     chrX    4020 169901582 169902082
+
+2024-05-10 15:38:53.286678 : Getting PeakMatrix from ArrowFile : WT.arrow, 0.019 mins elapsed.
+
+2024-05-10 15:38:54.197097 : featureDF Tcf1Lef1dKO, Class = DFrame
+DataFrame with 223071 rows and 4 columns
+       seqnames     idx     start       end
+          <Rle> <array>   <array>   <array>
+1          chr1       1   3445826   3446326
+2          chr1       2   3670598   3671098
+3          chr1       3   3671475   3671975
+4          chr1       4   4332431   4332931
+5          chr1       5   4405712   4406212
+...         ...     ...       ...       ...
+223067     chrX    4016 169880160 169880660
+223068     chrX    4017 169880772 169881272
+223069     chrX    4018 169883815 169884315
+223070     chrX    4019 169892566 169893066
+223071     chrX    4020 169901582 169902082
+
+2024-05-10 15:38:54.4555 : Getting PeakMatrix from ArrowFile : Tcf1Lef1dKO.arrow, 0.036 mins elapsed.
+
+2024-05-10 15:38:54.545873 : featureDF Tle34KO, Class = DFrame
+DataFrame with 223071 rows and 4 columns
+
+2024-05-10 15:38:54.637263 : featureDF Runx1KO, Class = DFrame
+DataFrame with 223071 rows and 4 columns
+       seqnames     idx     start       end
+          <Rle> <array>   <array>   <array>
+1          chr1       1   3445826   3446326
+2          chr1       2   3670598   3671098
+3          chr1       3   3671475   3671975
+4          chr1       4   4332431   4332931
+5          chr1       5   4405712   4406212
+...         ...     ...       ...       ...
+223067     chrX    4016 169880160 169880660
+223068     chrX    4017 169880772 169881272
+223069     chrX    4018 169883815 169884315
+223070     chrX    4019 169892566 169893066
+223071     chrX    4020 169901582 169902082
+
+       seqnames     idx     start       end
+          <Rle> <array>   <array>   <array>
+1          chr1       1   3445826   3446326
+2          chr1       2   3670598   3671098
+3          chr1       3   3671475   3671975
+4          chr1       4   4332431   4332931
+5          chr1       5   4405712   4406212
+...         ...     ...       ...       ...
+223067     chrX    4016 169880160 169880660
+223068     chrX    4017 169880772 169881272
+223069     chrX    4018 169883815 169884315
+223070     chrX    4019 169892566 169893066
+223071     chrX    4020 169901582 169902082
+
+2024-05-10 15:38:54.75976 : Getting PeakMatrix from ArrowFile : Tle34KO.arrow, 0.043 mins elapsed.
+2024-05-10 15:38:54.842178 : Getting PeakMatrix from ArrowFile : Runx1KO.arrow, 0.044 mins elapsed.
+
+2024-05-10 15:39:49.120817 : mat Tcf1Lef1dKO, Class = dgCMatrix
+mat Tcf1Lef1dKO: nRows = 223071, nCols = 2218
+mat Tcf1Lef1dKO: NonZeroEntries = 41191645, EntryRange = [ 1 , 4 ]
+5 x 5 sparse Matrix of class "dgCMatrix"
+     Tcf1Lef1dKO#CATGCCTGTCCATTGA-1 Tcf1Lef1dKO#GGTGTCGGTTTGTCTT-1
+[1,]                              .                              .
+[2,]                              .                              .
+[3,]                              .                              .
+[4,]                              .                              .
+[5,]                              .                              1
+     Tcf1Lef1dKO#GATTGACCAGTGCTCG-1 Tcf1Lef1dKO#GCAACCGTCCAGGCCA-1
+[1,]                              .                              .
+[2,]                              .                              .
+[3,]                              .                              .
+[4,]                              .                              .
+[5,]                              .                              .
+     Tcf1Lef1dKO#TAATTCCAGTTACACC-1
+[1,]                              .
+[2,]                              .
+[3,]                              .
+[4,]                              .
+[5,]                              .
+
+
+2024-05-10 15:39:50.443123 : Organizing SE PeakMatrix from ArrowFile : Tcf1Lef1dKO.arrow, 0.969 mins elapsed.
+
+2024-05-10 15:39:53.67526 : se Tcf1Lef1dKO, Class = RangedSummarizedExperiment
+class: RangedSummarizedExperiment 
+dim: 223071 2218 
+metadata(0):
+assays(1): PeakMatrix
+rownames: NULL
+rowData names(1): idx
+colnames(2218): Tcf1Lef1dKO#CATGCCTGTCCATTGA-1
+  Tcf1Lef1dKO#GGTGTCGGTTTGTCTT-1 ... Tcf1Lef1dKO#TAATCGGGTTGAATAG-1
+  Tcf1Lef1dKO#CTCACCACACTTACAG-1
+colData names(22): BlacklistRatio DoubletEnrichment ... ReadsInPeaks
+  FRIP
+
+2024-05-10 15:39:53.710168 : Completed PeakMatrix : Tcf1Lef1dKO(4 of 4), 1.169 mins elapsed.
+
+2024-05-10 15:40:08.350554 : mat Runx1KO, Class = dgCMatrix
+mat Runx1KO: nRows = 223071, nCols = 3669
+mat Runx1KO: NonZeroEntries = 62740939, EntryRange = [ 1 , 4 ]
+5 x 5 sparse Matrix of class "dgCMatrix"
+     Runx1KO#TAATCGGTCAGCCGAC-1 Runx1KO#GAAGTGGTCAGGTCTA-1
+[1,]                          .                          .
+[2,]                          .                          .
+[3,]                          .                          .
+[4,]                          .                          .
+[5,]                          .                          .
+     Runx1KO#CACTAAGTCTTTGCAT-1 Runx1KO#AAACTCGAGATCTCAC-1
+[1,]                          .                          .
+[2,]                          .                          .
+[3,]                          .                          .
+[4,]                          .                          .
+[5,]                          .                          .
+     Runx1KO#TCTATTGGTGTCGTGC-1
+[1,]                          .
+[2,]                          .
+[3,]                          .
+[4,]                          .
+[5,]                          .
+
+
+2024-05-10 15:40:09.771915 : Organizing SE PeakMatrix from ArrowFile : Runx1KO.arrow, 1.292 mins elapsed.
+
+2024-05-10 15:40:13.577335 : se Runx1KO, Class = RangedSummarizedExperiment
+class: RangedSummarizedExperiment 
+dim: 223071 3669 
+metadata(0):
+assays(1): PeakMatrix
+rownames: NULL
+rowData names(1): idx
+colnames(3669): Runx1KO#TAATCGGTCAGCCGAC-1 Runx1KO#GAAGTGGTCAGGTCTA-1
+  ... Runx1KO#GGAGTAGCAATGTGTC-1 Runx1KO#CGATGATAGAGGAATG-1
+colData names(22): BlacklistRatio DoubletEnrichment ... ReadsInPeaks
+  FRIP
+
+2024-05-10 15:40:13.607479 : Completed PeakMatrix : Runx1KO(3 of 4), 1.501 mins elapsed.
+
+2024-05-10 15:40:28.406464 : mat Tle34KO, Class = dgCMatrix
+mat Tle34KO: nRows = 223071, nCols = 6324
+mat Tle34KO: NonZeroEntries = 97449298, EntryRange = [ 1 , 4 ]
+5 x 5 sparse Matrix of class "dgCMatrix"
+     Tle34KO#TGTGGCGTCACTGATG-1 Tle34KO#CAGTATGAGAGCTGTG-1
+[1,]                          .                          .
+[2,]                          .                          .
+[3,]                          .                          .
+[4,]                          .                          .
+[5,]                          .                          .
+     Tle34KO#GGTGCTGGTAGTCTGT-1 Tle34KO#AGTCCGGAGACGCCAA-1
+[1,]                          .                          .
+[2,]                          .                          .
+[3,]                          .                          .
+[4,]                          .                          .
+[5,]                          .                          .
+     Tle34KO#GCACCTTCACACTAGT-1
+[1,]                          .
+[2,]                          .
+[3,]                          .
+[4,]                          .
+[5,]                          .
+
+
+2024-05-10 15:40:29.807761 : Organizing SE PeakMatrix from ArrowFile : Tle34KO.arrow, 1.627 mins elapsed.
+
+2024-05-10 15:40:30.339926 : mat WT, Class = dgCMatrix
+mat WT: nRows = 223071, nCols = 6554
+mat WT: NonZeroEntries = 102569214, EntryRange = [ 1 , 4 ]
+5 x 5 sparse Matrix of class "dgCMatrix"
+     WT#AACAAAGCAACACGGA-1 WT#GCTTGCTTCTCGGCGA-1 WT#CTGCGTTCACTGAAGG-1
+[1,]                     2                     .                     .
+[2,]                     .                     .                     .
+[3,]                     .                     .                     2
+[4,]                     1                     .                     .
+[5,]                     .                     .                     .
+     WT#CCCTCTCCAGATAAGT-1 WT#TTGCGGGTCAACACGT-1
+[1,]                     .                     .
+[2,]                     .                     .
+[3,]                     .                     .
+[4,]                     .                     .
+[5,]                     .                     .
+
+
+2024-05-10 15:40:31.105307 : Organizing SE PeakMatrix from ArrowFile : WT.arrow, 1.649 mins elapsed.
+
+2024-05-10 15:40:31.96996 : se Tle34KO, Class = RangedSummarizedExperiment
+class: RangedSummarizedExperiment 
+dim: 223071 6324 
+metadata(0):
+assays(1): PeakMatrix
+rownames: NULL
+rowData names(1): idx
+colnames(6324): Tle34KO#TGTGGCGTCACTGATG-1 Tle34KO#CAGTATGAGAGCTGTG-1
+  ... Tle34KO#ACTGCGGTCGAGAACG-1 Tle34KO#GTTATGGCAAGACACG-1
+colData names(22): BlacklistRatio DoubletEnrichment ... ReadsInPeaks
+  FRIP
+
+2024-05-10 15:40:31.980115 : Completed PeakMatrix : Tle34KO(2 of 4), 1.807 mins elapsed.
+
+2024-05-10 15:40:34.080434 : se WT, Class = RangedSummarizedExperiment
+class: RangedSummarizedExperiment 
+dim: 223071 6554 
+metadata(0):
+assays(1): PeakMatrix
+rownames: NULL
+rowData names(1): idx
+colnames(6554): WT#AACAAAGCAACACGGA-1 WT#GCTTGCTTCTCGGCGA-1 ...
+  WT#GCGATCGCACACGGTC-1 WT#TTGACGACACACATTG-1
+colData names(22): BlacklistRatio DoubletEnrichment ... ReadsInPeaks
+  FRIP
+
+2024-05-10 15:40:34.093917 : Completed PeakMatrix : WT(1 of 4), 1.842 mins elapsed.
+2024-05-10 15:40:37.379772 : Organizing colData, 1.897 mins elapsed.
+2024-05-10 15:40:37.858359 : Organizing rowData, 1.905 mins elapsed.
+2024-05-10 15:40:37.868546 : Organizing rowRanges, 1.905 mins elapsed.
+2024-05-10 15:40:37.882492 : Organizing Assays (1 of 1), 1.905 mins elapsed.
+2024-05-10 15:40:42.933987 : Constructing SummarizedExperiment, 1.989 mins elapsed.
+2024-05-10 15:41:01.62059 : Finished Matrix Creation, 2.301 mins elapsed.

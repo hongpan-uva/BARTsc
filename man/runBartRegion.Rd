@@ -9,7 +9,8 @@ runBartRegion(
   name,
   genome,
   region_list = NULL,
-  gene_mode_param = list(binsize = 1000)
+  region_mode_param = list(binsize = 50, scorecol = 5),
+  reserve_interm = FALSE
 )
 }
 \arguments{
@@ -24,15 +25,9 @@ runBartRegion(
 \item{region_mode_param}{a list of costumized arguments for region mode}
 }
 \value{
-A Bart object
+A bart object
 }
 \description{
-This function run BART region mode. Input could be a pre-created Bart
+This function run BART region mode. Input could be a pre-created bart
 object, or be set by specifying name, genome and region_list
-}
-\examples{
-bart_obj <- Bart("B_cell_region", "hg38", region_data = B_cell_region)
-bart_obj <- runBartBartRegion(bart_obj)
-
-bart_obj <- runBartBartRegion("B_cell_region", "hg38", B_cell_region)
 }
