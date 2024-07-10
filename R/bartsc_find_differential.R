@@ -62,6 +62,7 @@ calc_pct_fc_rna <- function(matrix, group1, group2) {
     return(res_df)
 }
 
+#' @importFrom Matrix t
 calc_pct_fc_atac <- function(matrix, group1, group2) {
     # calculate percentage and foldchange
 

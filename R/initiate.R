@@ -49,6 +49,7 @@ load_bart2 <- function(
 #' install bart2 python package
 #'
 #' @param bart_dir path to install bart2
+#' @param python_ver python version to use, default is "3.9"
 #' @param lib path of bart2 library data
 #'
 #' @return no return
@@ -57,10 +58,25 @@ load_bart2 <- function(
 #'
 install_bart2 <- function(
     bart_dir = NULL,
+    python_ver = "3.9",
     lib = NULL) {
-    # create a virtual env of python 3.9
-    reticulate::install_python("3.9")
-    reticulate::virtualenv_create(envname = "bartsc_env", version = "3.9")
+    out <- tryCatch(
+        {
+            reticulate::use_python_version(python_ver)
+        },
+        error = function(cond) {
+            message("Given python version was not found, will install it")
+            return(1)
+        }
+    )
+
+    # install certain python version
+    if (out == 1) {
+        reticulate::install_python(python_ver)
+    }
+
+    # create a virtual env
+    reticulate::virtualenv_create(envname = "bartsc_env", version = python_ver)
     reticulate::use_virtualenv("bartsc_env")
     reticulate::virtualenv_remove(envname = "bartsc_env", packages = "numpy", confirm = FALSE) # remove existing numpy
 
@@ -163,6 +179,7 @@ get_library <- function(lib_dir) {
 #' This function
 #'
 #' @param condaenv name of conda environment that bart2 is installed
+#' @param python_ver python version to use, default is "3.9"
 #'
 #' @return no return.
 #'
@@ -172,7 +189,8 @@ get_library <- function(lib_dir) {
 #'
 initialize <- function(
     condaenv = NULL,
-    virtualenv = NULL) {
+    virtualenv = NULL,
+    python_ver = "3.9") {
     answer1 <- askYesNo("Start installing bart2 and related data library?")
 
     if (is.na(answer1)) {
@@ -190,6 +208,6 @@ initialize <- function(
         lib_full_dir <- readline("Specify the path to store data library 13.3GB (skip to store under BARTsc R package directory): ") %>% get_library() # nolint: line_length_linter.
         print(paste("library: ", lib_full_dir))
 
-        readline("Specify the path to install bart2 (skip to install under BARTsc R package directory): ") %>% install_bart2(., lib = lib_full_dir)
+        readline("Specify the path to install bart2 (skip to install under BARTsc R package directory): ") %>% install_bart2(., python_ver = python_ver, lib = lib_full_dir)
     }
 }

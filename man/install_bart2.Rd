@@ -4,10 +4,12 @@
 \alias{install_bart2}
 \title{install bart2 python package}
 \usage{
-install_bart2(bart_dir = NULL, lib = NULL)
+install_bart2(bart_dir = NULL, python_ver = "3.9", lib = NULL)
 }
 \arguments{
 \item{bart_dir}{path to install bart2}
+
+\item{python_ver}{python version to use, default is "3.9"}
 
 \item{lib}{path of bart2 library data}
 }

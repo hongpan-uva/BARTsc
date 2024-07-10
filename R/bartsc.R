@@ -118,6 +118,7 @@ bartsc <- function(name, genome, label, cell_types_used = NULL,
     if (!is.null(ATAC_cnt_matrix) && !is.null(peaks)) {
         object@assays[["ATAC"]] <- list()
         object@assays[["ATAC"]][["peaks"]] <- peaks
+        rownames(ATAC_cnt_matrix) <- 1:nrow(ATAC_cnt_matrix) # coerce rownames
         object@assays[["ATAC"]][["counts"]] <- ATAC_cnt_matrix
     } else if (!is.null(ATAC_norm_matrix) && !is.null(peaks)) {
         object@assays[["ATAC"]] <- list()
@@ -334,7 +335,7 @@ setMethod("calc_crossCT_auc_RNA", "bartsc", function(
             bart_obj <- bart(paste0(x[1], "::", x[2]),
                 genome = object@meta$genome,
                 gene_data = object@data[["pairwise_DEG"]][[paste0(x[1], "::", x[2])]],
-                gene_mode_param = bartsc_proj@param$gene_mode_param
+                gene_mode_param = object@param$gene_mode_param
             )
             bart_obj <- runBartGeneSet(bart_obj)
             auc_df <- bart_obj@result[["geneset"]][["auc"]]
