@@ -7,8 +7,8 @@
 bart(
   name,
   genome,
-  gene_data = NULL,
-  region_data = NULL,
+  gene_data,
+  region_data,
   gene_mode_param = list(binsize = 1000),
   region_mode_param = list(binsize = 50, scorecol = 5),
   bimodal_mode_param = list(binsize = 50)

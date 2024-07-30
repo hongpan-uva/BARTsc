@@ -1,7 +1,9 @@
+#' @export
 get_RNA_cnt_from_Seurat <- function(seurat_project) {
     return(seurat_project@assays$RNA@counts)
 }
 
+#' @export
 get_ATAC_cnt_from_ArchR <- function(ArchR_project, convert_name = FALSE) {
     if (!PackageCheck("ArchR")) {
         stop("package ArchR uninstalled")
@@ -22,6 +24,7 @@ get_ATAC_cnt_from_ArchR <- function(ArchR_project, convert_name = FALSE) {
     return(peak_mtx)
 }
 
+#' @export
 get_peaks_from_ArchR <- function(ArchR_project) {
     if (!PackageCheck("ArchR")) {
         stop("package ArchR uninstalled")
@@ -33,12 +36,14 @@ get_peaks_from_ArchR <- function(ArchR_project) {
     return(peaks)
 }
 
+#' @export
 get_label_from_Seurat <- function(seurat_project, col) {
     label <- proj@meta.data[[col]]
     names(label) <- rownames(proj@meta.data)
     return(label)
 }
 
+#' @export
 get_label_from_ArchR <- function(ArchR_project, col, convert_name = FALSE) {
     Cdata <- getCellColData(ArchR_project)
     label <- Cdata[, col]

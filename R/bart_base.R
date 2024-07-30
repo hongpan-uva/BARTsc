@@ -36,7 +36,7 @@ setClass("bart",
 #'
 #' @export
 #'
-bart <- function(name, genome, gene_data = NULL, region_data = NULL,
+bart <- function(name, genome, gene_data, region_data,
                  gene_mode_param = list(binsize = 1000),
                  region_mode_param = list(
                      binsize = 50, scorecol = 5
@@ -49,18 +49,18 @@ bart <- function(name, genome, gene_data = NULL, region_data = NULL,
     bart_obj@meta$name <- name
     bart_obj@meta$genome <- genome
     # set gene mode data and paramter
-    if (!is.null(gene_data)) {
-        bart_obj@data[["input_genes"]] <- gene_data
+    if (!missing(gene_data)) {
+        bart_obj@data <- c(bart_obj@data, list(input_genes = gene_data))
         bart_obj@param[["gene_mode_param"]] <- gene_mode_param
         bart_obj@Args[["gene_mode_args"]] <- generateArgs(bart_obj, "geneset")
     }
     # set region mode data and paramter
-    if (!is.null(region_data)) {
-        bart_obj@data[["input_regions"]] <- region_data
+    if (!missing(region_data)) {
+        bart_obj@data <- c(bart_obj@data, list(input_regions = region_data))
         bart_obj@param[["region_mode_param"]] <- region_mode_param
         bart_obj@Args[["region_mode_args"]] <- generateArgs(bart_obj, "region")
     }
-    if (!is.null(gene_data) && !is.null(region_data)) {
+    if (!missing(gene_data) && !missing(region_data)) {
         bart_obj@param[["bimodal_mode_param"]] <- bimodal_mode_param
         bart_obj@Args[["bimodal_mode_args"]] <- generateArgs(bart_obj, "bimodal")
     }
@@ -265,6 +265,53 @@ setMethod("predictTF", "bart", function(object, mode, reserve_interm = FALSE) {
     } else {
         object@intermediate <- list()
     }
+    object@result[[mode]][["auc"]] <- auc_df
+    object@result[[mode]][["stats"]] <- stat_res_df
+
+    return(object)
+})
+
+
+setGeneric(
+    "generate_null",
+    function(object, mode, reserve_interm = FALSE) standardGeneric("generate_null")
+)
+
+setMethod("generate_null", "bart", function(object, mode, reserve_interm = FALSE) {
+    if (mode == "geneset") {
+        INT <- "Marge_based"
+        counting <- "predicted_enhancers"
+        positions <- "predicted_enhancers_rank"
+        args <- object@Args[["gene_mode_args"]]
+    } else if (mode == "region") {
+        INT <- "region_based"
+        counting <- "overlapped_enhancers"
+        positions <- "overlapped_enhancers_rank"
+        args <- object@Args[["region_mode_args"]]
+    } else if (mode == "bimodal") {
+        INT <- "bimodal"
+        counting <- "combined_enhancers"
+        positions <- "combined_enhancers_rank"
+        args <- object@Args[["bimodal_mode_args"]] # temporarily share args with gene mode
+    } else {
+        stop("wrong mode")
+    }
+
+    utils::data(null_auc)
+    auc_df <- data.frame(ChIP_seq = unlist(auc[[2]]), AUC = unlist(auc[[1]]))
+
+    # final stats
+    stat_res <- StatTest$stat_test(auc[[1]], auc[[2]], args$normfile)
+    tf_names <- attr(stat_res, "row.names")
+    stat_res_df <- stat_res %>%
+        lapply(., unlist) %>%
+        as.data.frame()
+    stat_res_df$TF <- tf_names
+    stat_res_df <- stat_res_df[, c(
+        "TF", "avg_auc", "score", "pvalue", "zscore",
+        "max_auc", "rank_avg_z_p_a", "rank_avg_z_p_a_irwinhall_pvalue"
+    )]
+
     object@result[[mode]][["auc"]] <- auc_df
     object@result[[mode]][["stats"]] <- stat_res_df
 

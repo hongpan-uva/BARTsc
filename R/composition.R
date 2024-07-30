@@ -4,23 +4,32 @@
 #' object, or be set by specifying name, genome and symbol_list
 #'
 #' @param object a BART object with valid geneset data
-#' @param name name of the input data, it could be a sample name, a cluster id and so on
+#' @param name name of the input data, it could be a sample name, a cluster id
+#' and so on
 #' @param genome "mm10" or "hg38"
-#' @param symbol_list a vector of gene symbols, check the internal data B_cell_gene as an example
+#' @param symbol_list a vector of gene symbols, check the internal data
+#' B_cell_gene as an example
 #' @param gene_mode_param a list of costumized arguments for gene mode
 #'
 #' @return A bart object
 #'
 #' @export
 #'
-runBartGeneSet <- function(object, name, genome, symbol_list = NULL,
-                           gene_mode_param = list(binsize = 1000), reserve_interm = FALSE) {
+run_bart_gene_set <- function(object, name, genome, symbol_list = NULL,
+                              gene_mode_param = list(binsize = 1000),
+                              reserve_interm = FALSE, return_null = FALSE) {
     if (missing(object)) {
         object <- bart(name, genome,
             gene_data = symbol_list,
             gene_mode_param = gene_mode_param
         )
     }
+
+    if (return_null == TRUE) {
+        object <- generate_null(object, mode = "geneset", reserve_interm)
+        return(object)
+    }
+
     object <- runMarge(object)
     object <- identifyEnhancer(object)
 
@@ -46,38 +55,71 @@ runBartGeneSet <- function(object, name, genome, symbol_list = NULL,
 #' object, or be set by specifying name, genome and region_list
 #'
 #' @param object a BART object with valid region data
-#' @param name name of the input data, it could be a sample name, a cluster id and so on
+#' @param name name of the input data, it could be a sample name, a cluster id
+#' and so on
 #' @param genome "mm10" or "hg38"
-#' @param region_list a dataframe that follows a BED6 format, check the internal data B_cell_region as an example
+#' @param region_list a dataframe that follows a BED6 format, check the
+#' internal data B_cell_region as an example
 #' @param region_mode_param a list of costumized arguments for region mode
 #'
 #' @return A bart object
 #'
 #' @export
 #'
-runBartRegion <- function(object, name, genome, region_list = NULL,
-                          region_mode_param = list(binsize = 50, scorecol = 5),
-                          reserve_interm = FALSE) {
+run_bart_region <- function(object, name, genome, region_list = NULL,
+                            region_mode_param = list(
+                                binsize = 50, scorecol = 5
+                            ),
+                            reserve_interm = FALSE, return_null = FALSE) {
     if (missing(object)) {
         object <- bart(name, genome,
             region_data = region_list,
             region_mode_param = region_mode_param
         )
     }
+
+    if (return_null == TRUE) {
+        object <- generate_null(object, mode = "region", reserve_interm)
+        return(object)
+    }
+
     object <- mapRegionScore(object)
     object <- predictTF(object, mode = "region", reserve_interm)
     return(object)
 }
 
+#' run BART bimodal mode
+#'
+#' This function run BART bimodal mode. Input could be a pre-created bart
+#' object, or be set by specifying name, genome, symbol_list and region_list
+#'
+#' @param object a BART object with valid geneset data
+#' @param name name of the input data, it could be a sample name, a cluster id
+#' and so on
+#' @param genome "mm10" or "hg38"
+#' @param symbol_list a vector of gene symbols, check the internal data
+#' B_cell_gene as an example
+#' @param region_list a dataframe that follows a BED6 format, check the
+#' internal data B_cell_region as an example
+#' @param gene_mode_param a list of costumized arguments for gene mode
+#'
+#' @return A bart object
+#'
 #' @import mgcv
 #' @import gratia
-runBartBimodal <- function(object, name, genome, symbol_list = NULL, region_list = NULL,
-                           gene_mode_param = list(binsize = 1000),
-                           region_mode_param = list(binsize = 50, scorecol = 5),
-                           bimodal_mode_param = list(
-                               binsize = 50
-                           ),
-                           reserve_interm = FALSE) {
+#' @export
+#'
+run_bart_bimodal <- function(
+    object, name, genome,
+    symbol_list = NULL, region_list = NULL,
+    gene_mode_param = list(binsize = 1000),
+    region_mode_param = list(
+        binsize = 50, scorecol = 5
+    ),
+    bimodal_mode_param = list(
+        binsize = 50
+    ),
+    reserve_interm = FALSE) {
     DFLT_INT_NUM <- 1000
 
     if (missing(object)) {
@@ -88,6 +130,7 @@ runBartBimodal <- function(object, name, genome, symbol_list = NULL, region_list
             bimodal_mode_param = bimodal_mode_param
         )
     }
+    # predict cis-regulatory profile
     object <- runMarge(object)
     object <- identifyEnhancer(object)
     object <- mapRegionScore(object)

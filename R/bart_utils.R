@@ -1,3 +1,4 @@
+#' @export
 setMethod("str", "bart", function(object) {
     cl <- class(object)
     # hide slots: 'Args', 'intermediate'
@@ -53,6 +54,9 @@ setMethod("str", "bart", function(object) {
 #' @param subcommand "geneset" or "region" or "bimodal"
 #'
 #' @return a dataframe of bart result
+#'
+#' @export
+#'
 setGeneric("get_bart_result", function(object, subcommand) standardGeneric("get_bart_result"))
 
 setMethod("get_bart_result", "bart", function(object, subcommand) {
@@ -87,6 +91,7 @@ setMethod("get_bart_result", "bart", function(object, subcommand) {
 #' @param subcommand "geneset" or "region" or "bimodal"
 #'
 #' @return a dataframe of AUC values
+#'
 setGeneric("get_bart_auc", function(object, subcommand) standardGeneric("get_bart_auc"))
 
 setMethod("get_bart_auc", "bart", function(object, subcommand) {
