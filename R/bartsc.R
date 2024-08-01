@@ -228,15 +228,16 @@ setMethod("run_signature_RNA", "bartsc", function(object) {
                 gene_data = object@data$signature_genes[[x]],
                 gene_mode_param = object@param$gene_mode_param
             )
-            # generate null prediction if input is null
-            if (is.null(bart_obj@data$input_genes)) {
+            # generate null prediction if input is empty
+            if (length(bart_obj@data$input_genes) == 0) {
                 bart_obj <- run_bart_gene_set(bart_obj, return_null = TRUE)
             } else {
                 bart_obj <- run_bart_gene_set(bart_obj)
             }
 
             return(bart_obj)
-        }
+        },
+        mc.preschedule = FALSE
     )
     names(bart_list) <- object@meta$cell_types_used
     object@resultsSignature[["RNA"]] <- bart_list
@@ -268,7 +269,8 @@ setMethod("run_signature_ATAC", "bartsc", function(object) {
                 bart_obj <- run_bart_region(bart_obj)
             }
             return(bart_obj)
-        }
+        },
+        mc.preschedule = FALSE
     )
     names(bart_list) <- object@meta$cell_types_used
     object@resultsSignature[["ATAC"]] <- bart_list
@@ -296,7 +298,8 @@ setMethod("run_signature_bimodal", "bartsc", function(object) {
             )
             bart_obj <- run_bart_bimodal(bart_obj)
             return(bart_obj)
-        }
+        },
+        mc.preschedule = FALSE
     )
     names(bart_list) <- object@meta$cell_types_used
     object@resultsSignature[["bimodal"]] <- bart_list
@@ -348,8 +351,8 @@ setMethod("calc_crossCT_auc_RNA", "bartsc", function(
                 gene_data = object@data[["pairwise_DEG"]][[paste0(x[1], "::", x[2])]],
                 gene_mode_param = object@param$gene_mode_param
             )
-            # generate null prediction if input is null
-            if (is.null(bart_obj@data$input_genes)) {
+            # generate null prediction if input is empty
+            if (length(bart_obj@data$input_genes) == 0) {
                 bart_obj <- run_bart_gene_set(bart_obj, return_null = TRUE)
             } else {
                 bart_obj <- run_bart_gene_set(bart_obj)
@@ -357,7 +360,8 @@ setMethod("calc_crossCT_auc_RNA", "bartsc", function(
 
             auc_df <- bart_obj@result[["geneset"]][["auc"]]
             return(auc_df)
-        }
+        },
+        mc.preschedule = FALSE
     )
 
     names(object@data[["RNA_pairwise_AUC"]]) <- pair_names
@@ -413,7 +417,8 @@ setMethod("calc_crossCT_auc_bimodal", "bartsc", function(
             bart_obj <- run_bart_bimodal(bart_obj)
             auc_df <- bart_obj@result[["bimodal"]][["auc"]]
             return(auc_df)
-        }
+        },
+        mc.preschedule = FALSE
     )
 
     names(object@data[["bimodal_pairwise_AUC"]]) <- pair_names
@@ -473,7 +478,8 @@ setMethod("calc_crossCT_auc_ATAC", "bartsc", function(
             }
             auc_df <- bart_obj@result[["region"]][["auc"]]
             return(auc_df)
-        }
+        },
+        mc.preschedule = FALSE
     )
 
     names(object@data[["ATAC_pairwise_AUC"]]) <- pair_names
@@ -539,7 +545,18 @@ setMethod("crossCT_test", "bartsc", function(
             return(strsplit(x, "_")[[1]][1])
         })
         auc$cluster_pair <- i
-        auc$zscore <- (auc$AUC - mean(auc$AUC)) / sd(auc$AUC)
+
+        # Compute mean and standard deviation
+        mean_auc <- mean(auc$AUC)
+        sd_auc <- sd(auc$AUC)
+
+        # Compute zscore with a check for sd being 0
+        auc$zscore <- if (sd_auc == 0) {
+            0
+        } else {
+            (auc$AUC - mean_auc) / sd_auc
+        }
+
         auc_df <- rbind(auc_df, auc)
     }
 
@@ -579,9 +596,25 @@ setMethod("crossCT_test", "bartsc", function(
                 # vec2 <- tmp_df$rank[which(tmp_df$cluster_pair == paste0(j, "::", i))]
                 vec1 <- tmp_df$zscore[which(tmp_df$cluster_pair == paste0(i, "::", j))]
                 vec2 <- tmp_df$zscore[which(tmp_df$cluster_pair == paste0(j, "::", i))]
-                test.res <- wilcox.test(vec1, vec2,
-                    paired = TRUE, alternative = "two.sided"
+
+                test.res <- tryCatch(
+                    {
+                        wilcox.test(vec1, vec2,
+                            paired = TRUE, alternative = "two.sided"
+                        )
+                    },
+                    error = function(cond) {
+                        # message
+                        message(paste0("TF: ", tf))
+                        message(paste0(i, ": ", vec1))
+                        message(paste0(j, ": ", vec2))
+                        message(cond)
+                        # Choose a return value in case of error
+                        return(NA)
+                        stop("wilcox paired test error")
+                    }
                 )
+
                 wcx_stat[i, j] <- test.res$statistic
                 wcx_pvalue[i, j] <- test.res$p.value
             }
@@ -656,7 +689,18 @@ setMethod("crossCT_test_RNA", "bartsc", function(
             return(strsplit(x, "_")[[1]][1])
         })
         auc$cluster_pair <- i
-        auc$zscore <- (auc$AUC - mean(auc$AUC)) / sd(auc$AUC)
+
+        # Compute mean and standard deviation
+        mean_auc <- mean(auc$AUC)
+        sd_auc <- sd(auc$AUC)
+
+        # Compute zscore with a check for sd being 0
+        auc$zscore <- if (sd_auc == 0) {
+            0
+        } else {
+            (auc$AUC - mean_auc) / sd_auc
+        }
+
         auc_df <- rbind(auc_df, auc)
     }
 
