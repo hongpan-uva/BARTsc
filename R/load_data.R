@@ -1,6 +1,26 @@
 #' @export
 get_RNA_cnt_from_Seurat <- function(seurat_project) {
-    return(seurat_project@assays$RNA@counts)
+    return(seurat_project@assays$RNA$counts)
+}
+
+#' @export
+get_ATAC_cnt_from_Seurat <- function(seurat_project) {
+    return(seurat_project@assays$ATAC$counts)
+}
+
+#' @export
+get_peaks_from_Seurat <- function(seurat_project) {
+    peaks_vec <- rownames(seurat_project@assays$ATAC$counts)
+
+    peaks_sep <- sapply(peaks_vec, function(x){
+        return(strsplit(x, "-")[[1]])
+    })
+
+    peaks <- as.data.frame(matrix(peaks_sep, ncol = 3, byrow = TRUE))
+    colnames(peaks) <- c("seqnames", "start", "end")
+
+    peaks <- cbind(peaks[, 1:3], name = ".", score = ".", strand = ".")
+    return(peaks)
 }
 
 #' @export

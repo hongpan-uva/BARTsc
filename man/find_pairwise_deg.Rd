@@ -8,9 +8,9 @@ find_pairwise_deg(
   object,
   min.pct = 0.1,
   min.diff.pct = -Inf,
-  log2fc.thr = 0.25,
+  log2fc.thr = 1,
   pval.thr = NULL,
-  padj.thr = NULL,
+  padj.thr = 0.05,
   auc.thr = 0,
   max.cells.per.ident = Inf
 )
@@ -35,7 +35,7 @@ fraction of detection between the two groups. Set to -Inf by default.}
 \item{auc.thr}{Threshold of AUC calculated by presto.}
 
 \item{max.cells.per.ident}{Down sample each identity class to a max number.
-Default is no downsampling. Not activated by default (set to Inf).}
+Not activated by default (set to Inf).}
 }
 \value{
 object A bartsc object.

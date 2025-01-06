@@ -9,6 +9,8 @@ find_pos_diffs(
   mod,
   fore_celltype,
   back_celltype,
+  fore_cells,
+  back_cells,
   min.pct = 0.1,
   min.diff.pct = -Inf,
   max.cells.per.ident = Inf,

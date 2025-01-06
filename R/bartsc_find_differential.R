@@ -138,6 +138,8 @@ setGeneric("find_pos_diffs", function(
     mod,
     fore_celltype,
     back_celltype,
+    fore_cells,
+    back_cells,
     min.pct = 0.1,
     min.diff.pct = -Inf,
     max.cells.per.ident = Inf,
@@ -150,6 +152,8 @@ setMethod("find_pos_diffs", "bartsc", function(
     mod,
     fore_celltype,
     back_celltype,
+    fore_cells,
+    back_cells,
     min.pct = 0.1,
     min.diff.pct = -Inf,
     max.cells.per.ident = Inf,
@@ -159,15 +163,32 @@ setMethod("find_pos_diffs", "bartsc", function(
     } else if (!mod %in% c("RNA", "ATAC")) {
         stop("must specify a valid modality ('RNA' or 'ATAC')")
     }
+
+    input_format <- ""
+    if (!missing(fore_celltype) && !missing(back_celltype)) {
+        input_format <- "cell_types"
+    } else if (!missing(fore_cells) && !missing(back_cells)) {
+        input_format <- "cells"
+    } else {
+        stop("Wrong parameter")
+    }
+
     if (mod == "RNA") {
         mtx_use <- object@assays$RNA$normalized
     } else if (mod == "ATAC") {
         mtx_use <- object@assays$ATAC$normalized
     }
 
-    label <- object@meta$label
-    fore_idx <- which(label %in% fore_celltype)
-    back_idx <- which(label %in% back_celltype)
+    if (input_format == "cell_types") { # fetch cell names from label
+        label <- object@meta$label
+        fore_idx <- names(label)[which(label %in% fore_celltype)]
+        back_idx <- names(label)[which(label %in% back_celltype)]
+    } else if (input_format == "cells") {
+        fore_idx <- fore_cells
+        back_idx <- back_cells
+    }
+
+    mtx_use <- mtx_use[, c(fore_idx, back_idx)]
 
     # calculate percentage and foldchange
     if (mod == "RNA") {
@@ -177,12 +198,20 @@ setMethod("find_pos_diffs", "bartsc", function(
     }
 
     # label2 for presto wilcoxon test
-    label2 <- object@meta$label
-    levels(label2)[which(levels(label2) %in% fore_celltype)] <- "fore"
-    levels(label2)[which(levels(label2) %in% back_celltype)] <- "back"
+    # label2 <- object@meta$label
+    # levels(label2)[which(levels(label2) %in% fore_celltype)] <- "fore"
+    # levels(label2)[which(levels(label2) %in% back_celltype)] <- "back"
+
+    label2 <- factor(
+        c(
+            rep("fore", length(fore_idx)),
+            rep("back", length(back_idx))
+        ),
+        levels = c("fore", "back")
+    )
 
     # presto wilcoxon test
-    wilcox_df <- presto::wilcoxauc(mtx_use, groups_use = c("fore", "back"), label2)
+    wilcox_df <- presto::wilcoxauc(mtx_use, groups_use = c("fore", "back"), y = label2)
     wilcox_df <- wilcox_df[which(wilcox_df$group == "fore"), ]
 
     final_de_df <- cbind(sum_df, wilcox_df[, c("feature", "auc", "pval", "padj")])
@@ -207,36 +236,48 @@ setMethod("find_pos_diffs", "bartsc", function(
 #' @param padj.thr Threshold of adjusted p value.
 #' @param auc.thr Threshold of AUC calculated by presto.
 #' @param max.cells.per.ident Down sample each identity class to a max number.
-#' Default is no downsampling. Not activated by default (set to Inf).
+#' Not activated by default (set to Inf).
 #'
 #' @return object A bartsc object.
 #'
 #' @export
 #'
-setGeneric("find_celltype_deg", function(
+setGeneric("find_signature_genes", function(
     object,
     min.pct = 0.1,
     min.diff.pct = -Inf,
-    log2fc.thr = 0.25,
+    log2fc.thr = 1,
     pval.thr = NULL,
-    padj.thr = NULL,
+    padj.thr = 0.05,
     auc.thr = 0,
     max.cells.per.ident = Inf) {
-    standardGeneric("find_celltype_deg")
+    standardGeneric("find_signature_genes")
 })
 
 #' @import parallel
-setMethod("find_celltype_deg", "bartsc", function(
+setMethod("find_signature_genes", "bartsc", function(
     object,
     min.pct = 0.1,
     min.diff.pct = -Inf,
-    log2fc.thr = 0.25,
+    log2fc.thr = 1,
     pval.thr = NULL,
-    padj.thr = NULL,
+    padj.thr = 0.05,
     auc.thr = 0,
     max.cells.per.ident = Inf) {
+    # save a copy of parameters
+    object@param$signature_genes_param <- list(
+        min.pct = min.pct,
+        min.diff.pct = min.diff.pct,
+        log2fc.thr = log2fc.thr,
+        pval.thr = pval.thr,
+        padj.thr = padj.thr,
+        auc.thr = auc.thr,
+        max.cells.per.ident = max.cells.per.ident
+    )
+
     object@data[["signature_genes"]] <- list()
     cell_types_used <- object@meta$cell_types_used
+
     object@data[["signature_genes"]] <- lapply(
         X = cell_types_used,
         FUN = function(x) {
@@ -286,33 +327,44 @@ setMethod("find_celltype_deg", "bartsc", function(
 #' @param padj.thr Threshold of adjusted p value.
 #' @param auc.thr Threshold of AUC calculated by presto.
 #' @param max.cells.per.ident Down sample each identity class to a max number.
-#' Default is no downsampling. Not activated by default (set to Inf).
+#' Not activated by default (set to Inf).
 #'
 #' @return object A bartsc object.
 #'
 #' @export
 #'
-setGeneric("find_celltype_dar", function(
+setGeneric("find_signature_peaks", function(
     object,
     min.pct = 0.1,
     min.diff.pct = -Inf,
     log2fc.thr = 0.25,
     pval.thr = NULL,
-    padj.thr = NULL,
-    auc.thr = 0,
+    padj.thr = 0.05,
+    auc.thr = 0.5,
     max.cells.per.ident = Inf) {
-    standardGeneric("find_celltype_dar")
+    standardGeneric("find_signature_peaks")
 })
 
-setMethod("find_celltype_dar", "bartsc", function(
+setMethod("find_signature_peaks", "bartsc", function(
     object,
     min.pct = 0.1,
     min.diff.pct = -Inf,
     log2fc.thr = 0.25,
     pval.thr = NULL,
-    padj.thr = NULL,
-    auc.thr = 0,
+    padj.thr = 0.05,
+    auc.thr = 0.5,
     max.cells.per.ident = Inf) {
+    # save a copy of parameters
+    object@param$signature_peaks_param <- list(
+        min.pct = min.pct,
+        min.diff.pct = min.diff.pct,
+        log2fc.thr = log2fc.thr,
+        pval.thr = pval.thr,
+        padj.thr = padj.thr,
+        auc.thr = auc.thr,
+        max.cells.per.ident = max.cells.per.ident
+    )
+
     object@data[["signature_peaks"]] <- list()
     cell_types_used <- object@meta$cell_types_used
 
@@ -351,43 +403,43 @@ setMethod("find_celltype_dar", "bartsc", function(
     return(object)
 })
 
-setGeneric("find_celltype_ar", function(object, pct = 0.05) {
-    standardGeneric("find_celltype_ar")
-})
+# setGeneric("find_celltype_ar", function(object, pct = 0.05) {
+#     standardGeneric("find_celltype_ar")
+# })
 
-setMethod("find_celltype_ar", "bartsc", function(object, pct = 0.05) {
-    if (pct < 0 || pct > 1) {
-        stop("invalid pct argument")
-    }
+# setMethod("find_celltype_ar", "bartsc", function(object, pct = 0.05) {
+#     if (pct < 0 || pct > 1) {
+#         stop("invalid pct argument")
+#     }
 
-    message("Calling cell type accessible regions...")
+#     message("Calling cell type accessible regions...")
 
-    norm_mtx <- object@assays$ATAC$normalized
-    options(scipen = 200)
+#     norm_mtx <- object@assays$ATAC$normalized
+#     options(scipen = 200)
 
-    object@data$accessible_peaks <- list()
+#     object@data$accessible_peaks <- list()
 
-    cell_types_used <- object@meta$cell_types_used
-    cell_type_label <- object@meta$label
-    for (ct in cell_types_used) {
-        cells <- names(cell_type_label)[which(cell_type_label == ct)]
-        threshold <- length(cells) * pct
-        acc_score <- apply(norm_mtx[, cells], 1, function(x) {
-            if (length(x[which(x > 0)]) > threshold) {
-                return(mean(x))
-            } else {
-                return(0)
-            }
-        })
-        all_peaks <- object@assays$ATAC$peaks
-        all_peaks$score <- acc_score
-        acc_peaks <- all_peaks[which(all_peaks$score > 0), ]
-        object@data$accessible_peaks[[ct]] <- acc_peaks
-        message(paste(ct, nrow(acc_peaks)))
-    }
+#     cell_types_used <- object@meta$cell_types_used
+#     cell_type_label <- object@meta$label
+#     for (ct in cell_types_used) {
+#         cells <- names(cell_type_label)[which(cell_type_label == ct)]
+#         threshold <- length(cells) * pct
+#         acc_score <- apply(norm_mtx[, cells], 1, function(x) {
+#             if (length(x[which(x > 0)]) > threshold) {
+#                 return(mean(x))
+#             } else {
+#                 return(0)
+#             }
+#         })
+#         all_peaks <- object@assays$ATAC$peaks
+#         all_peaks$score <- acc_score
+#         acc_peaks <- all_peaks[which(all_peaks$score > 0), ]
+#         object@data$accessible_peaks[[ct]] <- acc_peaks
+#         message(paste(ct, nrow(acc_peaks)))
+#     }
 
-    return(object)
-})
+#     return(object)
+# })
 
 #' Find pairwise differentially expressed genes
 #'
@@ -406,7 +458,7 @@ setMethod("find_celltype_ar", "bartsc", function(object, pct = 0.05) {
 #' @param padj.thr Threshold of adjusted p value.
 #' @param auc.thr Threshold of AUC calculated by presto.
 #' @param max.cells.per.ident Down sample each identity class to a max number.
-#' Default is no downsampling. Not activated by default (set to Inf).
+#' Not activated by default (set to Inf).
 #'
 #' @return object A bartsc object.
 #'
@@ -416,9 +468,9 @@ setGeneric("find_pairwise_deg", function(
     object,
     min.pct = 0.1,
     min.diff.pct = -Inf,
-    log2fc.thr = 0.25,
+    log2fc.thr = 1,
     pval.thr = NULL,
-    padj.thr = NULL,
+    padj.thr = 0.05,
     auc.thr = 0,
     max.cells.per.ident = Inf) {
     standardGeneric("find_pairwise_deg")
@@ -428,11 +480,22 @@ setMethod("find_pairwise_deg", "bartsc", function(
     object,
     min.pct = 0.1,
     min.diff.pct = -Inf,
-    log2fc.thr = 0.25,
+    log2fc.thr = 1,
     pval.thr = NULL,
-    padj.thr = NULL,
+    padj.thr = 0.05,
     auc.thr = 0,
     max.cells.per.ident = Inf) {
+    # save a copy of parameters
+    object@param$pairwise_deg_param <- list(
+        min.pct = min.pct,
+        min.diff.pct = min.diff.pct,
+        log2fc.thr = log2fc.thr,
+        pval.thr = pval.thr,
+        padj.thr = padj.thr,
+        auc.thr = auc.thr,
+        max.cells.per.ident = max.cells.per.ident
+    )
+
     cell_types_used <- object@meta$cell_types_used
     pairs <- list()
     pair_names <- c()
@@ -500,7 +563,7 @@ setMethod("find_pairwise_deg", "bartsc", function(
 #' @param padj.thr Threshold of adjusted p value.
 #' @param auc.thr Threshold of AUC calculated by presto.
 #' @param max.cells.per.ident Down sample each identity class to a max number.
-#' Default is no downsampling. Not activated by default (set to Inf).
+#' Not activated by default (set to Inf).
 #'
 #' @return object A bartsc object.
 #'
@@ -509,12 +572,11 @@ setMethod("find_pairwise_deg", "bartsc", function(
 setGeneric("find_pairwise_dar", function(
     object,
     min.pct = 0.1,
-    max.back.pct = 1,
     min.diff.pct = -Inf,
     log2fc.thr = 0.25,
     pval.thr = NULL,
-    padj.thr = NULL,
-    auc.thr = 0,
+    padj.thr = 0.05,
+    auc.thr = 0.5,
     max.cells.per.ident = Inf) {
     standardGeneric("find_pairwise_dar")
 })
@@ -522,13 +584,23 @@ setGeneric("find_pairwise_dar", function(
 setMethod("find_pairwise_dar", "bartsc", function(
     object,
     min.pct = 0.1,
-    max.back.pct = 1,
     min.diff.pct = -Inf,
     log2fc.thr = 0.25,
     pval.thr = NULL,
-    padj.thr = NULL,
-    auc.thr = 0,
+    padj.thr = 0.05,
+    auc.thr = 0.5,
     max.cells.per.ident = Inf) {
+    # save a copy of parameters
+    object@param$pairwise_dar_param <- list(
+        min.pct = min.pct,
+        min.diff.pct = min.diff.pct,
+        log2fc.thr = log2fc.thr,
+        pval.thr = pval.thr,
+        padj.thr = padj.thr,
+        auc.thr = auc.thr,
+        max.cells.per.ident = max.cells.per.ident
+    )
+
     cell_types_used <- object@meta$cell_types_used
     pairs <- list()
     pair_names <- c()
