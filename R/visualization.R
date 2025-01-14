@@ -159,8 +159,8 @@ deviation_heatmap <- function(
 #'
 #' @return A plot.
 #'
-#' @importFrom viridis plasma
-#' @importFrom scatterplot3d scatterplot3d
+#' @import viridis
+#' @import scatterplot3d
 #'
 #' @export
 #'

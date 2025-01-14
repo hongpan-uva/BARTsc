@@ -1,6 +1,21 @@
-## 1. First time initialization
+## 0. Installation and initialization
 
-After installing BARTsc, when the user uses it **for the first time**, it needs to be initialized to automatically install the BART2 python module using function `initialize()`. BARTsc will create a python virtual environment for the installation of BART2 and related dependencies. The user could specify the path for storing relevant data library (recommended) and the path for module. 
+Install necessary dependencies
+
+```R
+install.packages("devtools")
+
+devtools::install_github("immunogenomics/presto")
+
+```
+
+Install BARTsc
+
+```R
+devtools::install_github("hongpan-uva/BARTsc")
+```
+
+After BARTsc is installed, **for the first time** the user imports it, BARTsc needs to be initialized with function `initialize()`. This step will automatically create a python virtual environment and install the BART2 python module and related dependencies. The user can specify the path for storing relevant data library (recommended) and the path for the module. 
 
 ```R
 library("BARTsc")
@@ -16,7 +31,7 @@ initialize()
 
 ## 2. Load Bart2 python module
 
-Once initialization is done, the user needs to load the created virtual environment to import BART2 module. This step is necessary for BARTsc to function.
+Once the initialization is done, the user needs to load the created virtual environment to import BART2 module. This step is necessary for BARTsc to function.
 
 ```R
 library("BARTsc")
@@ -93,20 +108,10 @@ Quickly identify these features using built-in functions.
 
 ```R
 # find cell type DEG
-RNA_proj <- find_celltype_deg(
-    RNA_proj,
-    min.pct = 0.25,
-    log2fc.thr = log2(2),
-    padj.thr = 0.05
-)
+RNA_proj <- find_celltype_deg(RNA_proj)
 
 # find pairwise DEG
-RNA_proj <- find_pairwise_deg(
-    RNA_proj,
-    min.pct = 0.25,
-    log2fc.thr = log2(2),
-    padj.thr = 0.05
-)
+RNA_proj <- find_pairwise_deg(RNA_proj)
 ```
 
 ```R
