@@ -215,13 +215,13 @@ results_list[["BCL6"]]
 dot_plot(bimodal_proj, mod = "bimodal", tf = "BCL6", max_dot_size = 22)
 ```
 
-<img src="./readme.assets/BCL6_dotplot.png" alt="BCL6_dotplot" style="zoom: 25%;" />
+<img src="./scMultiome.assets/BCL6_dotplot.png" alt="BCL6_dotplot" style="zoom: 25%;" />
 
 ```R
 deviation_heatmap(bimodal_proj, mod = "bimodal", tf = "BCL6", tile_fontsize = 6)
 ```
 
-<img src="./readme.assets/BCL6_heatmap.png" alt="BCL6_heatmap" style="zoom:25%;" />
+<img src="./scMultiome.assets/BCL6_heatmap.png" alt="BCL6_heatmap" style="zoom:25%;" />
 
 ## 8. Identify cell type key regulators
 
@@ -258,4 +258,4 @@ head(results_list[["B"]])
 key_regulator_scatter(bimodal_proj, mod = "bimodal", cell_type = "B", tfs_labeled = c("EBF1", "BCL6", "PAX5", "FOXP1", "IKZF1"))
 ```
 
-<img src="readme.assets/key_reg_scatter.png" alt="key_reg_scatter" style="zoom:25%;" />
+<img src="scMultiome.assets/key_reg_scatter.png" alt="key_reg_scatter" style="zoom:25%;" />

@@ -214,13 +214,13 @@ results_list[["BCL6"]]
 dot_plot(ATAC_proj, mod = "ATAC", tf = "BCL6", max_dot_size = 22)
 ```
 
-<img src="./readme.assets/BCL6_dotplot.png" alt="BCL6_dotplot" style="zoom: 25%;" />
+<img src="./scATAC-seq.assets/BCL6_dotplot.png" alt="BCL6_dotplot" style="zoom: 25%;" />
 
 ```R
 deviation_heatmap(ATAC_proj, mod = "ATAC", tf = "BCL6", tile_fontsize = 6)
 ```
 
-<img src="./readme.assets/BCL6_heatmap.png" alt="BCL6_heatmap" style="zoom:25%;" />
+<img src="./scATAC-seq.assets/BCL6_heatmap.png" alt="BCL6_heatmap" style="zoom:25%;" />
 
 ## 7. Identify cell type key regulators
 
@@ -257,4 +257,4 @@ head(results_list[["B"]])
 key_regulator_scatter(ATAC_proj, mod = "ATAC", cell_type = "B", tfs_labeled = c("EBF1", "BCL6", "PAX5", "FOXP1", "IKZF1"))
 ```
 
-<img src="readme.assets/key_reg_scatter.png" alt="key_reg_scatter" style="zoom:25%;" />
+<img src="scATAC-seq.assets/key_reg_scatter.png" alt="key_reg_scatter" style="zoom:25%;" />
