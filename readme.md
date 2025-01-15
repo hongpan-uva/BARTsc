@@ -35,6 +35,6 @@ BARTsc is made to identify functional transcriptional regulators and reveal rela
 
 [Vignette for scRNA-seq](vignettes/scRNA-seq.md)
 
-[vignette for scATAC-seq](vignettes/scATAC-seq.md)
+[Vignette for scATAC-seq](vignettes/scATAC-seq.md)
 
-[vignette for single-cell multiome (GEX + ATAC)](vignettes/scMultiome.md)
+[Vignette for single-cell multiome (GEX + ATAC)](vignettes/scMultiome.md)
