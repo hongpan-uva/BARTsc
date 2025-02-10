@@ -154,7 +154,7 @@ run_bart_bimodal <- function(
         {
             gam_model <- mgcv::gam(formula = y ~ s(x, bs = "cs"), data = df, method = "REML")
             deriv_df <- gratia::derivatives(gam_model)
-            integ_num <- round(deriv_df$data[which.max(deriv_df$derivative)])
+            integ_num <- round(deriv_df$x[which.max(deriv_df$.derivative)])
             if (integ_num >= DFLT_INT_NUM) {
                 message(paste(object@meta$name, "top udhs included:", integ_num))
             } else {
