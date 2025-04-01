@@ -121,8 +121,8 @@ run_bart_bimodal <- function(
     ),
     reserve_interm = FALSE, return_null = FALSE) {
     DFLT_INT_NUM <- 1000 # default integration number
-    RNA_ONLY <- FALSE # weather only use RNA side
-    ATAC_ONLY <- FALSE # weather only use ATAC side
+    RNA_ONLY <- FALSE # whether only use RNA side
+    ATAC_ONLY <- FALSE # whether only use ATAC side
 
     if (missing(object)) {
         object <- bart(name, genome,
@@ -158,7 +158,7 @@ run_bart_bimodal <- function(
     udhs_ATAC_score <- object@intermediate$region_based$overlapped_enhancers
     n_positive <- length(udhs_ATAC_score[which(udhs_ATAC_score > 0)])
 
-    if (n_positive < DFLT_INT_NUM) {
+    if (n_positive == 0) {
         RNA_ONLY <- TRUE
     }
 
@@ -209,23 +209,39 @@ run_bart_bimodal <- function(
         object <- predictTF(object, "bimodal", reserve_interm)
         message(paste0("integrated with top ", integ_num, " UDHSs"))
     } else if (RNA_ONLY == TRUE) {
-        message("Warning: ATAC side has fewer scored regions than minimum integration number (500), will only use RNA side")
+        message("Warning: ATAC input mapped to 0 region, will only use RNA side")
 
-        object_ <- predictTF(object, "geneset", reserve_interm)
-        object@result$bimodal <- object_@result$geneset
+        profile_used <- unlist(object@intermediate[["Marge_based"]][["predicted_enhancers"]])
+        profile_used[(DFLT_INT_NUM + 1):length(profile_used)] <- -Inf # only use top DFLT_INT_NUM UDHS
+        counting <- as.list(profile_used)
 
-        if (reserve_interm == TRUE) {
-            object@intermediate <- object_@intermediate
-        }
+        # get sorted UDHS ids
+        positions <- counting %>%
+            unlist() %>%
+            sort(decreasing = TRUE) %>%
+            names()
+
+        object@intermediate[["bimodal"]][["combined_enhancers"]] <- counting
+        object@intermediate[["bimodal"]][["combined_enhancers_rank"]] <- positions
+
+        object <- predictTF(object, "bimodal", reserve_interm)
     } else if (ATAC_ONLY == TRUE) {
         message("Warning: RNA side failed, will only use ATAC side")
 
-        object_ <- predictTF(object, "region", reserve_interm)
-        object@result$bimodal <- object_@result$region
+        profile_used <- unlist(object@intermediate[["Marge_based"]][["predicted_enhancers"]])
+        profile_used[(DFLT_INT_NUM + 1):length(profile_used)] <- -Inf # only use top DFLT_INT_NUM UDHS
+        counting <- as.list(profile_used)
 
-        if (reserve_interm == TRUE) {
-            object@intermediate <- object_@intermediate
-        }
+        # get sorted UDHS ids
+        positions <- counting %>%
+            unlist() %>%
+            sort(decreasing = TRUE) %>%
+            names()
+
+        object@intermediate[["bimodal"]][["combined_enhancers"]] <- counting
+        object@intermediate[["bimodal"]][["combined_enhancers_rank"]] <- positions
+
+        object <- predictTF(object, "bimodal", reserve_interm)
     }
 
     return(object)
