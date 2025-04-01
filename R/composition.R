@@ -33,7 +33,7 @@ run_bart_gene_set <- function(object, name, genome, symbol_list = NULL,
     object <- runMarge(object)
     object <- identifyEnhancer(object)
 
-    profile_1 <- unlist(object@intermediate[["Marge_based"]][["predicted_enhancers"]])
+    # profile_1 <- unlist(object@intermediate[["Marge_based"]][["predicted_enhancers"]])
 
     # # keep the score of top n and bottom n
     # n_top <- 2000
@@ -119,8 +119,10 @@ run_bart_bimodal <- function(
     bimodal_mode_param = list(
         binsize = 50
     ),
-    reserve_interm = FALSE) {
-    DFLT_INT_NUM <- 1000
+    reserve_interm = FALSE, return_null = FALSE) {
+    DFLT_INT_NUM <- 1000 # default integration number
+    RNA_ONLY <- FALSE # weather only use RNA side
+    ATAC_ONLY <- FALSE # weather only use ATAC side
 
     if (missing(object)) {
         object <- bart(name, genome,
@@ -130,54 +132,101 @@ run_bart_bimodal <- function(
             bimodal_mode_param = bimodal_mode_param
         )
     }
-    # predict cis-regulatory profile
-    object <- runMarge(object)
-    object <- identifyEnhancer(object)
-    object <- mapRegionScore(object)
 
-    udhs_RNA_ordered <- object@intermediate$Marge_based$predicted_enhancers_rank
-    udhs_ATAC_ordered <- object@intermediate$region_based$overlapped_enhancers_rank
+    if (return_null == TRUE) {
+        object <- generate_null(object, mode = "bimodal", reserve_interm)
+        return(object)
+    }
+
+    # predict cis-regulatory profile
+    RNA.res <- tryCatch(
+        {
+            object <- runMarge(object)
+            object <- identifyEnhancer(object)
+        },
+        error = function(cond) {
+            return(NA)
+        }
+    )
+
+    if (is.na(RNA.res)) {
+        ATAC_ONLY <- TRUE
+    }
+
+    object <- mapRegionScore(object)
 
     udhs_ATAC_score <- object@intermediate$region_based$overlapped_enhancers
     n_positive <- length(udhs_ATAC_score[which(udhs_ATAC_score > 0)])
 
-    overlap_count <- sapply(seq(0, n_positive, by = 10), function(x) {
-        intersect(udhs_RNA_ordered[1:x], udhs_ATAC_ordered[1:x]) %>%
-            length() %>%
-            return()
-    })
-
-    df <- data.frame(top_sites_included = seq(0, n_positive, by = 10), overlap_count)
-    colnames(df) <- c("x", "y")
-    use_default <- FALSE
-    out <- tryCatch(
-        {
-            gam_model <- mgcv::gam(formula = y ~ s(x, bs = "cs"), data = df, method = "REML")
-            deriv_df <- gratia::derivatives(gam_model)
-            integ_num <- round(deriv_df$x[which.max(deriv_df$.derivative)])
-            if (integ_num >= DFLT_INT_NUM) {
-                message(paste(object@meta$name, "top udhs included:", integ_num))
-            } else {
-                message(paste(object@meta$name, "optimized integration number too small:", integ_num))
-                integ_num <- DFLT_INT_NUM
-                message(paste("Use default value", integ_num))
-            }
-        },
-        error = function(cond) {
-            message(paste("failed to find optimized integration number for ", object@meta$name))
-            message(paste("Use default value", DFLT_INT_NUM))
-            return("use default")
-        }
-    )
-
-    if (!is.null(out)) {
-        integ_num <- DFLT_INT_NUM
+    if (n_positive < DFLT_INT_NUM) {
+        RNA_ONLY <- TRUE
     }
 
-    object <- combineModsByTopRank(object, n_valid = integ_num, method = "geom.mean")
-    # object <- combineModsBySign(object)
-    # object <- combineModsByProduct(object, ATAC_weight = 1)
-    # object <- refineRNAWithATAC(object)
-    object <- predictTF(object, "bimodal", reserve_interm)
+    if (RNA_ONLY == TRUE && ATAC_ONLY == TRUE) {
+        message("Warning: Both RNA and ATAC did not map to enough UDHSs, return null output")
+        object <- run_bart_bimodal(object, return_null = TRUE, reserve_interm = reserve_interm)
+    } else if (RNA_ONLY == FALSE && ATAC_ONLY == FALSE) {
+        udhs_RNA_ordered <- object@intermediate$Marge_based$predicted_enhancers_rank
+        udhs_ATAC_ordered <- object@intermediate$region_based$overlapped_enhancers_rank
+
+        overlap_count <- sapply(seq(0, n_positive, by = 10), function(x) {
+            intersect(udhs_RNA_ordered[1:x], udhs_ATAC_ordered[1:x]) %>%
+                length() %>%
+                return()
+        })
+
+        df <- data.frame(top_sites_included = seq(0, n_positive, by = 10), overlap_count)
+        colnames(df) <- c("x", "y")
+        use_default <- FALSE
+        out <- tryCatch(
+            {
+                gam_model <- mgcv::gam(formula = y ~ s(x, bs = "cs"), data = df, method = "REML")
+                deriv_df <- gratia::derivatives(gam_model)
+                integ_num <- round(deriv_df$x[which.max(deriv_df$.derivative)])
+                if (integ_num >= DFLT_INT_NUM) {
+                    message(paste(object@meta$name, "top udhs included:", integ_num))
+                } else {
+                    message(paste(object@meta$name, "optimized integration number too small:", integ_num))
+                    integ_num <- DFLT_INT_NUM
+                    message(paste("Use default value", integ_num))
+                }
+            },
+            error = function(cond) {
+                message(paste("failed to find optimized integration number for ", object@meta$name))
+                message(paste("Use default value", DFLT_INT_NUM))
+                return("use default")
+            }
+        )
+
+        if (!is.null(out)) {
+            integ_num <- DFLT_INT_NUM
+        }
+
+        object <- combineModsByTopRank(object, n_valid = integ_num, method = "geom.mean")
+        # object <- combineModsBySign(object)
+        # object <- combineModsByProduct(object, ATAC_weight = 1)
+        # object <- refineRNAWithATAC(object)
+        object <- predictTF(object, "bimodal", reserve_interm)
+        message(paste0("integrated with top ", integ_num, " UDHSs"))
+    } else if (RNA_ONLY == TRUE) {
+        message("Warning: ATAC side has fewer scored regions than minimum integration number (500), will only use RNA side")
+
+        object_ <- predictTF(object, "geneset", reserve_interm)
+        object@result$bimodal <- object_@result$geneset
+
+        if (reserve_interm == TRUE) {
+            object@intermediate <- object_@intermediate
+        }
+    } else if (ATAC_ONLY == TRUE) {
+        message("Warning: RNA side failed, will only use ATAC side")
+
+        object_ <- predictTF(object, "region", reserve_interm)
+        object@result$bimodal <- object_@result$region
+
+        if (reserve_interm == TRUE) {
+            object@intermediate <- object_@intermediate
+        }
+    }
+
     return(object)
 }

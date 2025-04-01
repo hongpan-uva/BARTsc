@@ -379,12 +379,14 @@ setMethod("calc_crossCT_auc_RNA", "bartsc", function(
 #' @export
 #'
 setGeneric("calc_crossCT_auc_bimodal", function(
-    object) {
+    object,
+    reserve_interm = FALSE) {
     standardGeneric("calc_crossCT_auc_bimodal")
 })
 
 setMethod("calc_crossCT_auc_bimodal", "bartsc", function(
-    object) {
+    object,
+    reserve_interm = FALSE) {
     message(paste(getOption("mc.cores", 2L), "cores to use"))
 
     cell_types_used <- object@meta$cell_types_used
@@ -414,7 +416,9 @@ setMethod("calc_crossCT_auc_bimodal", "bartsc", function(
                 region_data = object@data[["pairwise_DAR"]][[paste0(x[1], "::", x[2])]],
                 bimodal_mode_param = object@param$bimodal_mode_param
             )
-            bart_obj <- run_bart_bimodal(bart_obj)
+
+            bart_obj <- run_bart_bimodal(bart_obj, reserve_interm = reserve_interm)
+
             auc_df <- bart_obj@result[["bimodal"]][["auc"]]
             return(auc_df)
         },

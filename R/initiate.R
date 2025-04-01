@@ -112,7 +112,7 @@ install_bart2 <- function(
     paste0("sed -i 's/=.*/= ", lib_str, "/' bart2/bart.conf") %>% system()
 
     # install bart2 python package
-    python_use <- virtualenv_python("bartsc_env")
+    python_use <- reticulate::virtualenv_python("bartsc_env")
     paste(python_use, "setup.py", "install") %>% system()
 
     setwd(work_dir)
