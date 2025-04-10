@@ -228,7 +228,7 @@ run_bart_bimodal <- function(
     } else if (ATAC_ONLY == TRUE) {
         message("Warning: RNA side failed, will only use ATAC side")
 
-        profile_used <- unlist(object@intermediate[["Marge_based"]][["predicted_enhancers"]])
+        profile_used <- unlist(object@intermediate[["region_based"]][["overlapped_enhancers"]])
         profile_used[(DFLT_INT_NUM + 1):length(profile_used)] <- -Inf # only use top DFLT_INT_NUM UDHS
         counting <- as.list(profile_used)
 
