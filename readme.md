@@ -1,3 +1,7 @@
+# BARTsc: a comprehensive toolkit for the transcriptional regulator analysis of single-cell omics data
+
+BARTsc is an R package that analyzes transcriptional regulators (TRs) based on single-cell omics data. It supports the analysis of scRNA-seq, scATAC-seq and scMultiome (GEX+ATAC) data. Similar as [BART](https://github.com/zang-lab/bart2), which focuses on bulk data analysis, BARTsc learns binding events from a large collection of public ChIP-seq data instead of using TF binding motifs. BARTsc is a great tool for the identification of (1) TRs that contribute to cell cluster signatures, (2) relative activity of TRs across different cell clusters, and (3) key regulators for each cell cluster.
+
 ## Installation and initialization
 
 Install necessary dependencies
@@ -38,3 +42,4 @@ BARTsc is made to identify functional transcriptional regulators and reveal rela
 [Vignette for scATAC-seq](vignettes/scATAC-seq.md)
 
 [Vignette for single-cell multiome (GEX + ATAC)](vignettes/scMultiome.md)
+
