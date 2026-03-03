@@ -582,18 +582,20 @@ setMethod("crossCT_test", "bartsc", function(
         colnames(wcx_stat) <- cell_types_used
 
         wcx_pvalue <- wcx_stat
+        max_rank_sum <- wcx_stat
 
         n_profiles <- length(unique(tmp_df$ChIP_seq))
-        max_rank_sum <- n_profiles * (n_profiles + 1) / 2
+        standard_max <- n_profiles * (n_profiles + 1) / 2
 
         # pairwise.wilcox.test(tmp_df$AUC, tmp_df$cluster, alternative = "less", paired = TRUE)
         for (i in cell_types_used) {
             for (j in cell_types_used) {
                 if (i == j) {
-                    wcx_stat[i, j] <- max_rank_sum / 2
+                    wcx_stat[i, j] <- 0
                     wcx_pvalue[i, j] <- 1
                     next
                 }
+
                 # vec1 <- tmp_df$AUC[which(tmp_df$cluster_pair == paste0(i, "::", j))]
                 # vec2 <- tmp_df$AUC[which(tmp_df$cluster_pair == paste0(j, "::", i))]
                 # vec1 <- tmp_df$rank[which(tmp_df$cluster_pair == paste0(i, "::", j))]
@@ -601,13 +603,27 @@ setMethod("crossCT_test", "bartsc", function(
                 vec1 <- tmp_df$zscore[which(tmp_df$cluster_pair == paste0(i, "::", j))]
                 vec2 <- tmp_df$zscore[which(tmp_df$cluster_pair == paste0(j, "::", i))]
 
-                test.res <- tryCatch(
-                    {
-                        wilcox.test(vec1, vec2,
-                            paired = TRUE, alternative = "two.sided"
-                        )
-                    },
+                had_warning <- FALSE
+                had_error <- FALSE
+
+                out <- tryCatch(
+                    withCallingHandlers(
+                        {
+                            res <- wilcox.test(vec1, vec2, paired = TRUE, alternative = "two.sided")
+                            wcx_stat[i, j] <- res$statistic
+                            wcx_pvalue[i, j] <- res$p.value
+                        },
+                        warning = function(w) {
+                            had_warning <<- TRUE
+                            if (grepl("cannot compute exact p-value with", conditionMessage(w))) {
+                                # message("caught zero-difference pairs")
+                                different_samples <- sum(vec1 != vec2) # get different pairs
+                                max_rank_sum[i, j] <<- different_samples * (different_samples + 1) / 2
+                            }
+                        }
+                    ),
                     error = function(cond) {
+                        had_error <<- TRUE
                         # message
                         message(paste0("TF: ", tf))
                         message(paste0(i, ": ", vec1))
@@ -619,18 +635,21 @@ setMethod("crossCT_test", "bartsc", function(
                     }
                 )
 
-                wcx_stat[i, j] <- test.res$statistic
-                wcx_pvalue[i, j] <- test.res$p.value
+                if (!had_warning && !had_error) { # if no warning or error
+                    max_rank_sum[i, j] <- standard_max
+                }
             }
         }
 
         ratio_mtx <- wcx_stat / max_rank_sum
+        ratio_mtx[is.na(ratio_mtx)] <- 0.5 # replace NA
         deviation_mtx <- ratio_mtx * 2 - 1
         abs_deviation_mtx <- abs(deviation_mtx)
         avg_abs_dev <- mean(abs_deviation_mtx[upper.tri(abs_deviation_mtx)])
         n_pairs <- length(wcx_pvalue[which(wcx_pvalue < 0.05)])
 
         wcx_stat_list[[tf]] <- wcx_stat
+        wcx_pvalue[is.nan(wcx_pvalue)] <- 1 # replace NaN
         wcx_pvalue_list[[tf]] <- wcx_pvalue
         ratio_mtx_list[[tf]] <- ratio_mtx
         dev_mtx_list[[tf]] <- deviation_mtx
@@ -646,366 +665,6 @@ setMethod("crossCT_test", "bartsc", function(
     cds_df <- cds_df[order(cds_df$n_sgfnt_pairs, cds_df$CDS, decreasing = TRUE), ]
 
     object@resultsCrossCellType[[mod]] <- list(
-        CDS = cds_df, deviation = dev_mtx_list, wilcox_sign_test_pvalue = wcx_pvalue_list
-    )
-
-    return(object)
-})
-
-#' create bart objects and run BART for cross-cell-type test
-#'
-#' @param object a bart object
-#'
-#' @importFrom combinat combn
-#'
-#' @return a bartsc object
-setGeneric("crossCT_test_RNA", function(
-    object) {
-    standardGeneric("crossCT_test_RNA")
-})
-
-setMethod("crossCT_test_RNA", "bartsc", function(
-    object) {
-    cell_types_used <- object@meta$cell_types_used
-
-    pairs <- list()
-    pair_names <- c()
-    idx <- 1
-
-    for (ct1 in cell_types_used) {
-        for (ct2 in cell_types_used) {
-            if (ct1 == ct2) {
-                next()
-            }
-            pairs[[idx]] <- c(ct1, ct2)
-            pair_names <- c(pair_names, paste0(ct1, "::", ct2))
-            idx <- idx + 1
-        }
-    }
-
-    # prepare auc data frames
-    auc_df <- as.data.frame(matrix(nrow = 0, ncol = 4))
-
-    for (i in pair_names) {
-        auc <- object@data$RNA_pairwise_AUC[[i]]
-        auc$rank <- rank(auc$AUC) # get rank, greater number for greater auc
-        auc$TF <- sapply(auc$ChIP_seq, function(x) {
-            return(strsplit(x, "_")[[1]][1])
-        })
-        auc$cluster_pair <- i
-
-        # Compute mean and standard deviation
-        mean_auc <- mean(auc$AUC)
-        sd_auc <- sd(auc$AUC)
-
-        # Compute zscore with a check for sd being 0
-        auc$zscore <- if (sd_auc == 0) {
-            0
-        } else {
-            (auc$AUC - mean_auc) / sd_auc
-        }
-
-        auc_df <- rbind(auc_df, auc)
-    }
-
-    tf_list <- unique(auc_df$TF)
-
-    # pairwise wilcoxon test
-    wcx_stat_list <- list()
-    wcx_pvalue_list <- list()
-    ratio_mtx_list <- list()
-    dev_mtx_list <- list()
-    avg_abs_dev_list <- list()
-    cds_df <- data.frame(matrix(nrow = 0, ncol = 4)) # Average Differential Score
-
-    for (tf in tf_list) {
-        tmp_df <- auc_df[which(auc_df$TF == tf), ]
-
-        wcx_stat <- matrix(nrow = length(cell_types_used), ncol = length(cell_types_used))
-        rownames(wcx_stat) <- cell_types_used
-        colnames(wcx_stat) <- cell_types_used
-
-        wcx_pvalue <- wcx_stat
-
-        n_profiles <- length(unique(tmp_df$ChIP_seq))
-        max_rank_sum <- n_profiles * (n_profiles + 1) / 2
-
-        # pairwise.wilcox.test(tmp_df$AUC, tmp_df$cluster, alternative = "less", paired = TRUE)
-        for (i in cell_types_used) {
-            for (j in cell_types_used) {
-                if (i == j) {
-                    wcx_stat[i, j] <- max_rank_sum / 2
-                    wcx_pvalue[i, j] <- 1
-                    next
-                }
-                # vec1 <- tmp_df$AUC[which(tmp_df$cluster_pair == paste0(i, "::", j))]
-                # vec2 <- tmp_df$AUC[which(tmp_df$cluster_pair == paste0(j, "::", i))]
-                # vec1 <- tmp_df$rank[which(tmp_df$cluster_pair == paste0(i, "::", j))]
-                # vec2 <- tmp_df$rank[which(tmp_df$cluster_pair == paste0(j, "::", i))]
-                vec1 <- tmp_df$zscore[which(tmp_df$cluster_pair == paste0(i, "::", j))]
-                vec2 <- tmp_df$zscore[which(tmp_df$cluster_pair == paste0(j, "::", i))]
-                test.res <- wilcox.test(vec1, vec2,
-                    paired = TRUE, alternative = "two.sided"
-                )
-                wcx_stat[i, j] <- test.res$statistic
-                wcx_pvalue[i, j] <- test.res$p.value
-            }
-        }
-
-        ratio_mtx <- wcx_stat / max_rank_sum
-        deviation_mtx <- ratio_mtx * 2 - 1
-        abs_deviation_mtx <- abs(deviation_mtx)
-        avg_abs_dev <- mean(abs_deviation_mtx[upper.tri(abs_deviation_mtx)])
-        n_pairs <- length(wcx_pvalue[which(wcx_pvalue < 0.05)])
-
-        wcx_stat_list[[tf]] <- wcx_stat
-        wcx_pvalue_list[[tf]] <- wcx_pvalue
-        ratio_mtx_list[[tf]] <- ratio_mtx
-        dev_mtx_list[[tf]] <- deviation_mtx
-        avg_abs_dev_list[[tf]] <- avg_abs_dev
-        cds_df <- rbind(cds_df, c(tf, avg_abs_dev, n_pairs, n_profiles)) # cds for Comprehensive Deviation Score
-    }
-
-    colnames(cds_df) <- c("TF", "CDS", "n_sgfnt_pairs", "n_profiles")
-    rownames(cds_df) <- 1:nrow(cds_df)
-    cds_df$CDS <- as.numeric(cds_df$CDS)
-    cds_df$n_sgfnt_pairs <- as.integer(cds_df$n_sgfnt_pairs)
-    cds_df$n_profiles <- as.integer(cds_df$n_profiles)
-    cds_df <- cds_df[order(cds_df$n_sgfnt_pairs, cds_df$CDS, decreasing = TRUE), ]
-
-    object@resultsCrossCellType[["RNA"]] <- list(
-        CDS = cds_df, deviation = dev_mtx_list, wilcox_sign_test_pvalue = wcx_pvalue_list
-    )
-
-    return(object)
-})
-
-#' create bart objects and run BART for cross-cell-type test
-#'
-#' @param object a bart object
-#'
-#' @importFrom combinat combn
-#'
-#' @return a bartsc object
-setGeneric("crossCT_test_bimodal", function(
-    object) {
-    standardGeneric("crossCT_test_bimodal")
-})
-
-setMethod("crossCT_test_bimodal", "bartsc", function(
-    object) {
-    cell_types_used <- object@meta$cell_types_used
-
-    pairs <- list()
-    pair_names <- c()
-    idx <- 1
-
-    for (ct1 in cell_types_used) {
-        for (ct2 in cell_types_used) {
-            if (ct1 == ct2) {
-                next()
-            }
-            pairs[[idx]] <- c(ct1, ct2)
-            pair_names <- c(pair_names, paste0(ct1, "::", ct2))
-            idx <- idx + 1
-        }
-    }
-
-    # prepare auc data frames
-    auc_df <- as.data.frame(matrix(nrow = 0, ncol = 4))
-
-    for (i in pair_names) {
-        auc <- object@data$bimodal_pairwise_AUC[[i]]
-        auc$rank <- rank(auc$AUC) # get rank, greater number for greater auc
-        auc$TF <- sapply(auc$ChIP_seq, function(x) {
-            return(strsplit(x, "_")[[1]][1])
-        })
-        auc$cluster_pair <- i
-        auc$zscore <- (auc$AUC - mean(auc$AUC)) / sd(auc$AUC)
-        auc_df <- rbind(auc_df, auc)
-    }
-
-    tf_list <- unique(auc_df$TF)
-
-    # pairwise wilcoxon test
-    wcx_stat_list <- list()
-    wcx_pvalue_list <- list()
-    ratio_mtx_list <- list()
-    dev_mtx_list <- list()
-    avg_abs_dev_list <- list()
-    cds_df <- data.frame(matrix(nrow = 0, ncol = 4)) # Average Differential Score
-
-    for (tf in tf_list) {
-        tmp_df <- auc_df[which(auc_df$TF == tf), ]
-
-        wcx_stat <- matrix(nrow = length(cell_types_used), ncol = length(cell_types_used))
-        rownames(wcx_stat) <- cell_types_used
-        colnames(wcx_stat) <- cell_types_used
-
-        wcx_pvalue <- wcx_stat
-
-        n_profiles <- length(unique(tmp_df$ChIP_seq))
-        max_rank_sum <- n_profiles * (n_profiles + 1) / 2
-
-        # pairwise.wilcox.test(tmp_df$AUC, tmp_df$cluster, alternative = "less", paired = TRUE)
-        for (i in cell_types_used) {
-            for (j in cell_types_used) {
-                if (i == j) {
-                    wcx_stat[i, j] <- max_rank_sum / 2
-                    wcx_pvalue[i, j] <- 1
-                    next
-                }
-                # vec1 <- tmp_df$AUC[which(tmp_df$cluster_pair == paste0(i, "::", j))]
-                # vec2 <- tmp_df$AUC[which(tmp_df$cluster_pair == paste0(j, "::", i))]
-                # vec1 <- tmp_df$rank[which(tmp_df$cluster_pair == paste0(i, "::", j))]
-                # vec2 <- tmp_df$rank[which(tmp_df$cluster_pair == paste0(j, "::", i))]
-                vec1 <- tmp_df$zscore[which(tmp_df$cluster_pair == paste0(i, "::", j))]
-                vec2 <- tmp_df$zscore[which(tmp_df$cluster_pair == paste0(j, "::", i))]
-                test.res <- wilcox.test(vec1, vec2,
-                    paired = TRUE, alternative = "two.sided"
-                )
-                wcx_stat[i, j] <- test.res$statistic
-                wcx_pvalue[i, j] <- test.res$p.value
-            }
-        }
-
-        ratio_mtx <- wcx_stat / max_rank_sum
-        deviation_mtx <- ratio_mtx * 2 - 1
-        abs_deviation_mtx <- abs(deviation_mtx)
-        avg_abs_dev <- mean(abs_deviation_mtx[upper.tri(abs_deviation_mtx)])
-        n_pairs <- length(wcx_pvalue[which(wcx_pvalue < 0.05)])
-
-        wcx_stat_list[[tf]] <- wcx_stat
-        wcx_pvalue_list[[tf]] <- wcx_pvalue
-        ratio_mtx_list[[tf]] <- ratio_mtx
-        dev_mtx_list[[tf]] <- deviation_mtx
-        avg_abs_dev_list[[tf]] <- avg_abs_dev
-        cds_df <- rbind(cds_df, c(tf, avg_abs_dev, n_pairs, n_profiles)) # cds for Comprehensive Deviation Score
-    }
-
-    colnames(cds_df) <- c("TF", "CDS", "n_sgfnt_pairs", "n_profiles")
-    rownames(cds_df) <- 1:nrow(cds_df)
-    cds_df$CDS <- as.numeric(cds_df$CDS)
-    cds_df$n_sgfnt_pairs <- as.integer(cds_df$n_sgfnt_pairs)
-    cds_df$n_profiles <- as.integer(cds_df$n_profiles)
-    cds_df <- cds_df[order(cds_df$n_sgfnt_pairs, cds_df$CDS, decreasing = TRUE), ]
-
-    object@resultsCrossCellType[["bimodal"]] <- list(
-        CDS = cds_df, deviation = dev_mtx_list, wilcox_sign_test_pvalue = wcx_pvalue_list
-    )
-
-    return(object)
-})
-
-#' create bart objects and run BART for cross-cell-type test
-#'
-#' @param object a bart object
-#'
-#' @return a bartsc object
-setGeneric("crossCT_test_ATAC", function(
-    object) {
-    standardGeneric("crossCT_test_ATAC")
-})
-
-setMethod("crossCT_test_ATAC", "bartsc", function(
-    object) {
-    cell_types_used <- object@meta$cell_types_used
-
-    pairs <- list()
-    pair_names <- c()
-    idx <- 1
-
-    for (ct1 in cell_types_used) {
-        for (ct2 in cell_types_used) {
-            if (ct1 == ct2) {
-                next()
-            }
-            pairs[[idx]] <- c(ct1, ct2)
-            pair_names <- c(pair_names, paste0(ct1, "::", ct2))
-            idx <- idx + 1
-        }
-    }
-
-    # prepare auc data frames
-    auc_df <- as.data.frame(matrix(nrow = 0, ncol = 4))
-
-    for (i in pair_names) {
-        auc <- object@data$ATAC_pairwise_AUC[[i]]
-        auc$rank <- rank(auc$AUC) # get rank, greater number for greater auc
-        auc$TF <- sapply(auc$ChIP_seq, function(x) {
-            return(strsplit(x, "_")[[1]][1])
-        })
-        auc$cluster_pair <- i
-        auc$zscore <- (auc$AUC - mean(auc$AUC)) / sd(auc$AUC)
-        auc_df <- rbind(auc_df, auc)
-    }
-
-    tf_list <- unique(auc_df$TF)
-
-    # pairwise wilcoxon test
-    wcx_stat_list <- list()
-    wcx_pvalue_list <- list()
-    ratio_mtx_list <- list()
-    dev_mtx_list <- list()
-    avg_abs_dev_list <- list()
-    cds_df <- data.frame(matrix(nrow = 0, ncol = 4)) # Average Differential Score
-
-    for (tf in tf_list) {
-        tmp_df <- auc_df[which(auc_df$TF == tf), ]
-
-        wcx_stat <- matrix(nrow = length(cell_types_used), ncol = length(cell_types_used))
-        rownames(wcx_stat) <- cell_types_used
-        colnames(wcx_stat) <- cell_types_used
-
-        wcx_pvalue <- wcx_stat
-
-        n_profiles <- length(unique(tmp_df$ChIP_seq))
-        max_rank_sum <- n_profiles * (n_profiles + 1) / 2
-
-        # pairwise.wilcox.test(tmp_df$AUC, tmp_df$cluster, alternative = "less", paired = TRUE)
-        for (i in cell_types_used) {
-            for (j in cell_types_used) {
-                if (i == j) {
-                    wcx_stat[i, j] <- max_rank_sum / 2
-                    wcx_pvalue[i, j] <- 1
-                    next
-                }
-                # vec1 <- tmp_df$AUC[which(tmp_df$cluster_pair == paste0(i, "::", j))]
-                # vec2 <- tmp_df$AUC[which(tmp_df$cluster_pair == paste0(j, "::", i))]
-                # vec1 <- tmp_df$rank[which(tmp_df$cluster_pair == paste0(i, "::", j))]
-                # vec2 <- tmp_df$rank[which(tmp_df$cluster_pair == paste0(j, "::", i))]
-                vec1 <- tmp_df$zscore[which(tmp_df$cluster_pair == paste0(i, "::", j))]
-                vec2 <- tmp_df$zscore[which(tmp_df$cluster_pair == paste0(j, "::", i))]
-                test.res <- wilcox.test(vec1, vec2,
-                    paired = TRUE, alternative = "two.sided"
-                )
-                wcx_stat[i, j] <- test.res$statistic
-                wcx_pvalue[i, j] <- test.res$p.value
-            }
-        }
-
-        ratio_mtx <- wcx_stat / max_rank_sum
-        deviation_mtx <- ratio_mtx * 2 - 1
-        abs_deviation_mtx <- abs(deviation_mtx)
-        avg_abs_dev <- mean(abs_deviation_mtx[upper.tri(abs_deviation_mtx)])
-        n_pairs <- length(wcx_pvalue[which(wcx_pvalue < 0.05)])
-
-        wcx_stat_list[[tf]] <- wcx_stat
-        wcx_pvalue_list[[tf]] <- wcx_pvalue
-        ratio_mtx_list[[tf]] <- ratio_mtx
-        dev_mtx_list[[tf]] <- deviation_mtx
-        avg_abs_dev_list[[tf]] <- avg_abs_dev
-        cds_df <- rbind(cds_df, c(tf, avg_abs_dev, n_pairs, n_profiles)) # cds for Comprehensive Deviation Score
-    }
-
-    colnames(cds_df) <- c("TF", "CDS", "n_sgfnt_pairs", "n_profiles")
-    rownames(cds_df) <- 1:nrow(cds_df)
-    cds_df$CDS <- as.numeric(cds_df$CDS)
-    cds_df$n_sgfnt_pairs <- as.integer(cds_df$n_sgfnt_pairs)
-    cds_df$n_profiles <- as.integer(cds_df$n_profiles)
-    cds_df <- cds_df[order(cds_df$n_sgfnt_pairs, cds_df$CDS, decreasing = TRUE), ]
-
-    object@resultsCrossCellType[["ATAC"]] <- list(
         CDS = cds_df, deviation = dev_mtx_list, wilcox_sign_test_pvalue = wcx_pvalue_list
     )
 
