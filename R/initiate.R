@@ -50,6 +50,7 @@ load_bart2 <- function(
 #'
 #' @param bart_dir path to install bart2
 #' @param python_ver python version to use, default is "3.9"
+#' @param site data library download site, supports "box" or "zenodo"
 #' @param lib path of bart2 library data
 #'
 #' @return no return
@@ -121,12 +122,17 @@ install_bart2 <- function(
 #' Download bart2 library
 #'
 #' @param lib_dir path to store library data
+#' @param site download site, supports "box" or "zenodo"
 #'
 #' @return path where the library date is stored
 #'
 #' @export
 #'
-get_library <- function(lib_dir) {
+get_library <- function(lib_dir, site = "box") {
+    # select download site for library data
+    if (!site %in% c("box", "zenodo")) {
+        stop("Invalid site: must be 'box' or 'zenodo'", call. = FALSE)
+    }
     if (substr(lib_dir, nchar(lib_dir), nchar(lib_dir)) == "/") {
         lib_dir <- substr(lib_dir, 1, (nchar(lib_dir) - 1))
     }
@@ -147,9 +153,19 @@ get_library <- function(lib_dir) {
 
     setwd("bart2_library")
 
+    # download links for different sites
+    if (site == "box") {
+        hg38_url <- "https://virginia.box.com/shared/static/2kqczz9gixetcr9p4bl650uyrio5zd33.gz"
+        mm10_url <- "https://virginia.box.com/shared/static/bxdggnhp4bjz2l5h2zjlisnzp0ac7axf.gz"
+    } else {
+        # pseudo links for zenodo
+        hg38_url <- "https://zenodo.org/records/18854649/files/hg38_library.tar.gz?download=1"
+        mm10_url <- "https://zenodo.org/records/18854649/files/mm10_library.tar.gz?download=1"
+    }
+
     system2(
         command = "wget",
-        args = c("https://virginia.box.com/shared/static/2kqczz9gixetcr9p4bl650uyrio5zd33.gz", "-O", "hg38_library.tar.gz"), # nolint: line_length_linter.
+        args = c(hg38_url, "-O", "hg38_library.tar.gz"),
         stdout = TRUE
     )
 
@@ -159,7 +175,7 @@ get_library <- function(lib_dir) {
 
     system2(
         command = "wget",
-        args = c("https://virginia.box.com/shared/static/bxdggnhp4bjz2l5h2zjlisnzp0ac7axf.gz", "-O", "mm10_library.tar.gz"), # nolint: line_length_linter.
+        args = c(mm10_url, "-O", "mm10_library.tar.gz"),
         stdout = TRUE
     )
 
@@ -190,7 +206,8 @@ get_library <- function(lib_dir) {
 initialize <- function(
     condaenv = NULL,
     virtualenv = NULL,
-    python_ver = "3.9") {
+    python_ver = "3.9",
+    site = "box") {
     answer1 <- askYesNo("Start installing bart2 and related data library?")
 
     if (is.na(answer1)) {
@@ -204,10 +221,24 @@ initialize <- function(
     } else if (answer1) {
         message("Installation started...")
 
-        # lib_full_dir <- "/project/zanglab_project/hz9fq/annotations/bart_library"
-        lib_full_dir <- readline("Specify the path to store data library 13.3GB (skip to store under BARTsc R package directory): ") %>% get_library() # nolint: line_length_linter.
+        # ask for existing data library path
+        existing_lib <- readline("Specify the absolute path to existing data library, e.g. Data/Path/bart2_library (skip if the data library is uninstalled):")
+
+        if (existing_lib != "") {
+            if (dir.exists(existing_lib)) {
+                lib_full_dir <- existing_lib
+                message("Using existing data library at: ", lib_full_dir)
+            } else {
+                message("Path does not exist. Proceeding to download library.")
+                # download data library from selected site
+                lib_full_dir <- readline("Specify the absolute path to store data library 13.3GB (skip to store under BARTsc R package directory): ") %>% get_library(site = site) # nolint: line_length_linter.
+            }
+        } else {
+            # download data library from selected site
+            lib_full_dir <- readline("Specify the absolute path to store data library 13.3GB (skip to store under BARTsc R package directory): ") %>% get_library(site = site) # nolint: line_length_linter.
+        }
         print(paste("library: ", lib_full_dir))
 
-        readline("Specify the path to install bart2 (skip to install under BARTsc R package directory): ") %>% install_bart2(., python_ver = python_ver, lib = lib_full_dir)
+        readline("Specify the absolute path to install bart2 (skip to install under BARTsc R package directory): ") %>% install_bart2(., python_ver = python_ver, lib = lib_full_dir)
     }
 }
