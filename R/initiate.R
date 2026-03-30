@@ -61,20 +61,16 @@ install_bart2 <- function(
     bart_dir = NULL,
     python_ver = "3.9",
     lib = NULL) {
-    out <- tryCatch(
+    tryCatch(
         {
             reticulate::use_python_version(python_ver)
         },
         error = function(cond) {
             message("Given python version was not found, will install it")
-            return(1)
+            reticulate::install_python(python_ver)
+            reticulate::use_python_version(python_ver)
         }
     )
-
-    # install certain python version
-    if (out == 1) {
-        reticulate::install_python(python_ver)
-    }
 
     # create a virtual env
     reticulate::virtualenv_create(envname = "bartsc_env", version = python_ver)
