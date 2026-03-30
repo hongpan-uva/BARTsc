@@ -30,7 +30,8 @@ Imports:
     mgcv,
     pbapply,
     presto,
-    SeuratObject
+    SeuratObject,
+    scatterplot3d
 Depends: 
     R (>= 3.50)
 LazyData: false
