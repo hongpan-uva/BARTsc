@@ -4,7 +4,12 @@
 \alias{initialize}
 \title{initialize the bart2 python package}
 \usage{
-initialize(condaenv = NULL, virtualenv = NULL, python_ver = "3.9")
+initialize(
+  condaenv = NULL,
+  virtualenv = NULL,
+  python_ver = "3.9",
+  site = "box"
+)
 }
 \arguments{
 \item{condaenv}{name of conda environment that bart2 is installed}

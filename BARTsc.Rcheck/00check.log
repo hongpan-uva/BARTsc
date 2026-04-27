@@ -1,0 +1,14 @@
+* using log directory ‘/sfs/gpfs/tardis/project/zanglab_project/hz9fq/BARTsc_project/R_package/BARTsc/BARTsc.Rcheck’
+* using R version 4.4.1 (2024-06-14)
+* using platform: x86_64-pc-linux-gnu
+* R was compiled by
+    gcc (GCC) 11.4.0
+    GNU Fortran (GCC) 11.4.0
+* running under: Rocky Linux 8.10 (Green Obsidian)
+* using session charset: UTF-8
+* using options ‘--no-tests --no-manual --no-vignettes --no-build-vignettes’
+* checking for file ‘BARTsc/DESCRIPTION’ ... ERROR
+Required fields missing or empty:
+  ‘Author’ ‘Maintainer’
+* DONE
+Status: 1 ERROR

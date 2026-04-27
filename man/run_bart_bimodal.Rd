@@ -13,7 +13,8 @@ run_bart_bimodal(
   gene_mode_param = list(binsize = 1000),
   region_mode_param = list(binsize = 50, scorecol = 5),
   bimodal_mode_param = list(binsize = 50),
-  reserve_interm = FALSE
+  reserve_interm = FALSE,
+  return_null = FALSE
 )
 }
 \arguments{

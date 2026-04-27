@@ -4,7 +4,7 @@
 \alias{calc_crossCT_auc_bimodal}
 \title{calculate aucs for cross-cell-type analysis of bimodal}
 \usage{
-calc_crossCT_auc_bimodal(object)
+calc_crossCT_auc_bimodal(object, reserve_interm = FALSE)
 }
 \arguments{
 \item{object}{a bart object}

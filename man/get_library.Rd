@@ -4,10 +4,12 @@
 \alias{get_library}
 \title{Download bart2 library}
 \usage{
-get_library(lib_dir)
+get_library(lib_dir, site = "box")
 }
 \arguments{
 \item{lib_dir}{path to store library data}
+
+\item{site}{download site, supports "box" or "zenodo"}
 }
 \value{
 path where the library date is stored

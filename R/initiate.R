@@ -13,7 +13,7 @@
         }
     )
 
-    contents <- reticulate::py_get_attr(bart2, "__all__") %>% py_to_r()
+    contents <- reticulate::py_get_attr(bart2, "__all__") %>% reticulate::py_to_r()
 
     for (module in contents) {
         paste0("bart2.", module) %>%
@@ -49,9 +49,8 @@ load_bart2 <- function(
 #' install bart2 python package
 #'
 #' @param bart_dir path to install bart2
-#' @param python_ver python version to use, default is "3.9"
-#' @param site data library download site, supports "box" or "zenodo"
-#' @param lib path of bart2 library data
+    #' @param python_ver python version to use, default is "3.9"
+    #' @param lib path of bart2 library data
 #'
 #' @return no return
 #'
@@ -61,6 +60,7 @@ install_bart2 <- function(
     bart_dir = NULL,
     python_ver = "3.9",
     lib = NULL) {
+    # Ensure the requested Python version is installed and capture its path
     tryCatch(
         {
             reticulate::use_python_version(python_ver)
@@ -71,47 +71,89 @@ install_bart2 <- function(
             reticulate::use_python_version(python_ver)
         }
     )
+    python_path <- reticulate::py_exe()
 
-    # create a virtual env
-    reticulate::virtualenv_create(envname = "bartsc_env", version = python_ver)
+    # Ensure a clean virtual environment
+    tryCatch({
+        reticulate::virtualenv_remove("bartsc_env", confirm = FALSE)
+    }, error = function(e) invisible(NULL))
+
+    # create a virtual env using the exact Python binary
+    reticulate::virtualenv_create(envname = "bartsc_env", python = python_path)
     reticulate::use_virtualenv("bartsc_env")
-    reticulate::virtualenv_remove(envname = "bartsc_env", packages = "numpy", confirm = FALSE) # remove existing numpy
-
-    work_dir <- getwd()
 
     if (is.null(bart_dir) || bart_dir == "") {
-        bart_dir <- paste0(.libPaths()[[1]], "/BARTsc")
+        bart_dir <- fs::path(.libPaths()[[1]], "BARTsc")
     }
 
-    setwd(bart_dir)
+    bart_dir <- fs::path_norm(bart_dir)
+    fs::dir_create(bart_dir, recurse = TRUE)
+
+    bart2_python_dir <- fs::path(bart_dir, "bart2_python")
 
     # remove existing bart2
-    system("rm -rf bart2_python")
+    if (fs::dir_exists(bart2_python_dir)) {
+        fs::dir_delete(bart2_python_dir)
+    }
+
+    tgz_path <- fs::path(bart_dir, "bart2_python.tgz")
+    tmp_extract <- fs::path(bart_dir, "bart2_extract_tmp")
+
+    # register cleanup in case of failure
+    success <- FALSE
+    on.exit({
+        if (!success) {
+            if (fs::file_exists(tgz_path)) fs::file_delete(tgz_path)
+            if (fs::dir_exists(tmp_extract)) fs::dir_delete(tmp_extract)
+            if (fs::dir_exists(bart2_python_dir)) fs::dir_delete(bart2_python_dir)
+        }
+    }, add = TRUE)
 
     # download latest bart2
-    system2(
-        command = "wget",
-        args = c(
-            "https://github.com/hongpan-uva/bart2/tarball/use_in_r",
-            "-O", "bart2_python.tgz"
-        ),
-        stdout = TRUE
-    )
+    tryCatch({
+        download.file(
+            url = "https://github.com/hongpan-uva/bart2/tarball/use_in_r",
+            destfile = tgz_path,
+            mode = "wb"
+        )
+    }, error = function(e) {
+        stop("Failed to download bart2 source code: ", conditionMessage(e), call. = FALSE)
+    })
 
-    system("mkdir bart2_python && tar xzf bart2_python.tgz -C bart2_python --strip-components 1")
-    system("rm bart2_python.tgz")
-    setwd("bart2_python")
+    # extract tarball
+    if (fs::dir_exists(tmp_extract)) {
+        fs::dir_delete(tmp_extract)
+    }
+    fs::dir_create(tmp_extract, recurse = TRUE)
+
+    tryCatch({
+        untar(tgz_path, exdir = tmp_extract)
+    }, error = function(e) {
+        stop("Failed to extract bart2 archive: ", conditionMessage(e), call. = FALSE)
+    })
+
+    # identify extracted directory and rename to bart2_python
+    extracted_items <- fs::dir_ls(tmp_extract, type = "directory")
+    if (length(extracted_items) == 0) {
+        stop("Failed to extract bart2_python archive", call. = FALSE)
+    }
+
+    fs::file_move(extracted_items[1], bart2_python_dir)
+    fs::dir_delete(tmp_extract)
+    fs::file_delete(tgz_path)
 
     # set up config
-    # sed -i 's/=.*/= \/test1\/test2\/bart2_library/' bart.conf
-    # system("sed -i 's/=.*/= \\/test1\\/test2\\/bart2_library/' bart2/bart2/bart.conf")
-    lib_str <- gsub("/", "\\\\/", lib)
-    paste0("sed -i 's/=.*/= ", lib_str, "/' bart2/bart.conf") %>% system()
+    conf_file <- fs::path(bart2_python_dir, "bart2", "bart.conf")
+    if (fs::file_exists(conf_file) && !is.null(lib)) {
+        lines <- readLines(conf_file)
+        lines <- sub("=.*", paste0("= ", lib), lines)
+        writeLines(lines, conf_file)
+    }
 
     # install bart2 python package
-    py_install(".", pip = TRUE)
+    reticulate::py_install(bart2_python_dir, pip = TRUE)
 
-    setwd(work_dir)
+    success <- TRUE
 }
 
 #' Download bart2 library
@@ -128,25 +170,21 @@ get_library <- function(lib_dir, site = "box") {
     if (!site %in% c("box", "zenodo")) {
         stop("Invalid site: must be 'box' or 'zenodo'", call. = FALSE)
     }
-    if (substr(lib_dir, nchar(lib_dir), nchar(lib_dir)) == "/") {
-        lib_dir <- substr(lib_dir, 1, (nchar(lib_dir) - 1))
-    }
-
-    work_dir <- getwd()
 
     if (lib_dir == "") {
-        lib_dir <- paste0(.libPaths()[[1]], "/BARTsc")
+        lib_dir <- fs::path(.libPaths()[[1]], "BARTsc")
     }
 
-    setwd(lib_dir)
+    lib_dir <- fs::path_norm(lib_dir)
+    fs::dir_create(lib_dir, recurse = TRUE)
 
-    if ("bart2_library" %in% list.files()) {
-        return(paste0(lib_dir, "/bart2_library"))
+    lib_path <- fs::path(lib_dir, "bart2_library")
+
+    if (fs::dir_exists(lib_path)) {
+        return(lib_path)
     }
 
-    system("mkdir bart2_library")
-
-    setwd("bart2_library")
+    fs::dir_create(lib_path, recurse = TRUE)
 
     # download links for different sites
     if (site == "box") {
@@ -158,29 +196,29 @@ get_library <- function(lib_dir, site = "box") {
         mm10_url <- "https://zenodo.org/records/18854649/files/mm10_library.tar.gz?download=1"
     }
 
-    system2(
-        command = "wget",
-        args = c(hg38_url, "-O", "hg38_library.tar.gz"),
-        stdout = TRUE
-    )
+    # download and extract hg38
+    hg38_tgz <- fs::path(lib_path, "hg38_library.tar.gz")
+    tryCatch({
+        download.file(hg38_url, destfile = hg38_tgz, mode = "wb")
+        untar(hg38_tgz, exdir = lib_path)
+    }, error = function(e) {
+        if (fs::file_exists(hg38_tgz)) fs::file_delete(hg38_tgz)
+        stop("Failed to download or extract hg38 library: ", conditionMessage(e), call. = FALSE)
+    })
+    fs::file_delete(hg38_tgz)
 
-    system("tar zxf hg38_library.tar.gz")
+    # download and extract mm10
+    mm10_tgz <- fs::path(lib_path, "mm10_library.tar.gz")
+    tryCatch({
+        download.file(mm10_url, destfile = mm10_tgz, mode = "wb")
+        untar(mm10_tgz, exdir = lib_path)
+    }, error = function(e) {
+        if (fs::file_exists(mm10_tgz)) fs::file_delete(mm10_tgz)
+        stop("Failed to download or extract mm10 library: ", conditionMessage(e), call. = FALSE)
+    })
+    fs::file_delete(mm10_tgz)
 
-    system("rm hg38_library.tar.gz")
-
-    system2(
-        command = "wget",
-        args = c(mm10_url, "-O", "mm10_library.tar.gz"),
-        stdout = TRUE
-    )
-
-    system("tar zxf mm10_library.tar.gz")
-
-    system("rm mm10_library.tar.gz")
-
-    setwd(work_dir)
-
-    return(paste0(lib_dir, "/bart2_library"))
+    return(lib_path)
 }
 
 #' initialize the bart2 python package
@@ -194,7 +232,7 @@ get_library <- function(lib_dir, site = "box") {
 #'
 #' @return no return.
 #'
-#' @import magrittr reticulate
+#' @import magrittr reticulate fs
 #'
 #' @export
 #'
@@ -206,34 +244,38 @@ initialize <- function(
     answer1 <- askYesNo("Start installing bart2 and related data library?")
 
     if (is.na(answer1)) {
-        print("Initiation exited", call. = FALSE)
-        return()
+        message("Initiation exited")
+        return(invisible(NULL))
     }
 
     if (!answer1) {
-        print("Initiation exited", call. = FALSE)
-        return()
-    } else if (answer1) {
-        message("Installation started...")
-
-        # ask for existing data library path
-        existing_lib <- readline("Specify the absolute path to existing data library, e.g. Data/Path/bart2_library (skip if the data library is uninstalled):")
-
-        if (existing_lib != "") {
-            if (dir.exists(existing_lib)) {
-                lib_full_dir <- existing_lib
-                message("Using existing data library at: ", lib_full_dir)
-            } else {
-                message("Path does not exist. Proceeding to download library.")
-                # download data library from selected site
-                lib_full_dir <- readline("Specify the absolute path to store data library 13.3GB (skip to store under BARTsc R package directory): ") %>% get_library(site = site) # nolint: line_length_linter.
-            }
-        } else {
-            # download data library from selected site
-            lib_full_dir <- readline("Specify the absolute path to store data library 13.3GB (skip to store under BARTsc R package directory): ") %>% get_library(site = site) # nolint: line_length_linter.
-        }
-        print(paste("library: ", lib_full_dir))
-
-        readline("Specify the absolute path to install bart2 (skip to install under BARTsc R package directory): ") %>% install_bart2(., python_ver = python_ver, lib = lib_full_dir)
+        message("Initiation exited")
+        return(invisible(NULL))
     }
+
+    message("Installation started...")
+
+    # ask for existing data library path
+    existing_lib <- readline("Specify the absolute path to existing data library, e.g. Data/Path/bart2_library (skip if the data library is uninstalled):")
+
+    if (existing_lib != "") {
+        if (dir.exists(existing_lib)) {
+            lib_full_dir <- fs::path_norm(existing_lib)
+            message("Using existing data library at: ", lib_full_dir)
+        } else {
+            message("Path does not exist. Proceeding to download library.")
+            # download data library from selected site
+            store_path <- readline("Specify the absolute path to store data library 13.3GB (skip to store under BARTsc R package directory): ")
+            lib_full_dir <- get_library(store_path, site = site)
+        }
+    } else {
+        # download data library from selected site
+        store_path <- readline("Specify the absolute path to store data library 13.3GB (skip to store under BARTsc R package directory): ")
+        lib_full_dir <- get_library(store_path, site = site)
+    }
+
+    message("library: ", lib_full_dir)
+
+    install_path <- readline("Specify the absolute path to install bart2 (skip to install under BARTsc R package directory): ")
+    install_bart2(install_path, python_ver = python_ver, lib = lib_full_dir)
 }
