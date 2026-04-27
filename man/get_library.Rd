@@ -15,5 +15,6 @@ get_library(lib_dir, site = "box")
 path where the library date is stored
 }
 \description{
-Download bart2 library
+If a library already exists at the target location, the user is
+prompted to decide whether to keep it or clear and re-download.
 }

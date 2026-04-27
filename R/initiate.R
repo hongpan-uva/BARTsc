@@ -158,6 +158,9 @@ install_bart2 <- function(
 
 #' Download bart2 library
 #'
+#' If a library already exists at the target location, the user is
+#' prompted to decide whether to keep it or clear and re-download.
+#'
 #' @param lib_dir path to store library data
 #' @param site download site, supports "box" or "zenodo"
 #'
@@ -181,7 +184,13 @@ get_library <- function(lib_dir, site = "box") {
     lib_path <- fs::path(lib_dir, "bart2_library")
 
     if (fs::dir_exists(lib_path)) {
-        return(lib_path)
+        answer <- askYesNo(paste0(
+            "Data library already exists at ", lib_path,
+            ". Do you want to clear it and re-download?"))
+        if (is.na(answer) || !answer) {
+            return(lib_path)
+        }
+        fs::dir_delete(lib_path)
     }
 
     fs::dir_create(lib_path, recurse = TRUE)

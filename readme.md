@@ -9,16 +9,15 @@ BARTsc is an R package that analyzes transcriptional regulators (TRs) based on s
 Install necessary dependencies
 
 ```R
-install.packages("devtools")
+install.packages("remotes")
 
-devtools::install_github("immunogenomics/presto")
-
+remotes::install_github("immunogenomics/presto")
 ```
 
 Install BARTsc
 
 ```R
-devtools::install_github("hongpan-uva/BARTsc")
+remotes::install_github("hongpan-uva/BARTsc")
 ```
 
 After BARTsc is installed, **for the first time** the user imports it, BARTsc needs to be initialized with function `initialize()`. This step will automatically create a python virtual environment and install the BART2 python module and related dependencies. The user can specify the path for storing relevant data library (recommended) and the path for the module. 
