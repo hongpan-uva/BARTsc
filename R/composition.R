@@ -246,3 +246,83 @@ run_bart_bimodal <- function(
 
     return(object)
 }
+
+#' Safe wrapper for run_bart_gene_set
+#'
+#' Runs BART geneset mode and falls back to a null result on empty input
+#' or any runtime error (e.g., Python sklearn failures).
+#'
+#' @param object a BART object with valid geneset data
+#' @param reserve_interm whether to reserve intermediate results
+#'
+#' @return A bart object
+#'
+#' @noRd
+safe_run_bart_gene_set <- function(object, reserve_interm = FALSE) {
+    if (length(object@data$input_genes) == 0) {
+        return(run_bart_gene_set(object, reserve_interm = reserve_interm, return_null = TRUE))
+    }
+    out <- tryCatch(
+        run_bart_gene_set(object, reserve_interm = reserve_interm),
+        error = function(e) {
+            warning(paste0("BART geneset failed for '", object@meta$name,
+                   "': ", conditionMessage(e), ". Returning null result."))
+            run_bart_gene_set(object, reserve_interm = reserve_interm, return_null = TRUE)
+        }
+    )
+    return(out)
+}
+
+#' Safe wrapper for run_bart_region
+#'
+#' Runs BART region mode and falls back to a null result on empty input
+#' or any runtime error.
+#'
+#' @param object a BART object with valid region data
+#' @param reserve_interm whether to reserve intermediate results
+#'
+#' @return A bart object
+#'
+#' @noRd
+safe_run_bart_region <- function(object, reserve_interm = FALSE) {
+    if (is.null(object@data$input_regions) || nrow(object@data$input_regions) == 0) {
+        return(run_bart_region(object, reserve_interm = reserve_interm, return_null = TRUE))
+    }
+    out <- tryCatch(
+        run_bart_region(object, reserve_interm = reserve_interm),
+        error = function(e) {
+            warning(paste0("BART region failed for '", object@meta$name,
+                   "': ", conditionMessage(e), ". Returning null result."))
+            run_bart_region(object, reserve_interm = reserve_interm, return_null = TRUE)
+        }
+    )
+    return(out)
+}
+
+#' Safe wrapper for run_bart_bimodal
+#'
+#' Runs BART bimodal mode and falls back to a null result on empty input
+#' or any runtime error.
+#'
+#' @param object a BART object with valid geneset and/or region data
+#' @param reserve_interm whether to reserve intermediate results
+#'
+#' @return A bart object
+#'
+#' @noRd
+safe_run_bart_bimodal <- function(object, reserve_interm = FALSE) {
+    gene_empty <- is.null(object@data$input_genes) || length(object@data$input_genes) == 0
+    region_empty <- is.null(object@data$input_regions) || nrow(object@data$input_regions) == 0
+    if (gene_empty && region_empty) {
+        return(run_bart_bimodal(object, reserve_interm = reserve_interm, return_null = TRUE))
+    }
+    out <- tryCatch(
+        run_bart_bimodal(object, reserve_interm = reserve_interm),
+        error = function(e) {
+            warning(paste0("BART bimodal failed for '", object@meta$name,
+                   "': ", conditionMessage(e), ". Returning null result."))
+            run_bart_bimodal(object, reserve_interm = reserve_interm, return_null = TRUE)
+        }
+    )
+    return(out)
+}

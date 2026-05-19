@@ -228,12 +228,7 @@ setMethod("run_signature_RNA", "bartsc", function(object) {
                 gene_data = object@data$signature_genes[[x]],
                 gene_mode_param = object@param$gene_mode_param
             )
-            # generate null prediction if input is empty
-            if (length(bart_obj@data$input_genes) == 0) {
-                bart_obj <- run_bart_gene_set(bart_obj, return_null = TRUE)
-            } else {
-                bart_obj <- run_bart_gene_set(bart_obj)
-            }
+            bart_obj <- safe_run_bart_gene_set(bart_obj)
 
             return(bart_obj)
         },
@@ -262,12 +257,7 @@ setMethod("run_signature_ATAC", "bartsc", function(object) {
                 region_data = object@data$signature_peaks[[x]],
                 region_mode_param = object@param$region_mode_param
             )
-            # generate null prediction if input is null
-            if (nrow(bart_obj@data$input_regions) == 0) {
-                bart_obj <- run_bart_region(bart_obj, return_null = TRUE)
-            } else {
-                bart_obj <- run_bart_region(bart_obj)
-            }
+            bart_obj <- safe_run_bart_region(bart_obj)
             return(bart_obj)
         },
         mc.preschedule = FALSE
@@ -296,7 +286,7 @@ setMethod("run_signature_bimodal", "bartsc", function(object) {
                 region_data = object@data$signature_peaks[[x]],
                 bimodal_mode_param = object@param$bimodal_mode_param
             )
-            bart_obj <- run_bart_bimodal(bart_obj)
+            bart_obj <- safe_run_bart_bimodal(bart_obj)
             return(bart_obj)
         },
         mc.preschedule = FALSE
@@ -351,12 +341,7 @@ setMethod("calc_crossCT_auc_RNA", "bartsc", function(
                 gene_data = object@data[["pairwise_DEG"]][[paste0(x[1], "::", x[2])]],
                 gene_mode_param = object@param$gene_mode_param
             )
-            # generate null prediction if input is empty
-            if (length(bart_obj@data$input_genes) == 0) {
-                bart_obj <- run_bart_gene_set(bart_obj, return_null = TRUE)
-            } else {
-                bart_obj <- run_bart_gene_set(bart_obj)
-            }
+            bart_obj <- safe_run_bart_gene_set(bart_obj)
 
             auc_df <- bart_obj@result[["geneset"]][["auc"]]
             return(auc_df)
@@ -417,7 +402,7 @@ setMethod("calc_crossCT_auc_bimodal", "bartsc", function(
                 bimodal_mode_param = object@param$bimodal_mode_param
             )
 
-            bart_obj <- run_bart_bimodal(bart_obj, reserve_interm = reserve_interm)
+            bart_obj <- safe_run_bart_bimodal(bart_obj, reserve_interm = reserve_interm)
 
             auc_df <- bart_obj@result[["bimodal"]][["auc"]]
             return(auc_df)
@@ -474,12 +459,7 @@ setMethod("calc_crossCT_auc_ATAC", "bartsc", function(
                 region_data = object@data[["pairwise_DAR"]][[paste0(x[1], "::", x[2])]],
                 region_mode_param = object@param$region_mode_param
             )
-            # generate null prediction if input is null
-            if (nrow(bart_obj@data$input_regions) == 0) {
-                bart_obj <- run_bart_region(bart_obj, return_null = TRUE)
-            } else {
-                bart_obj <- run_bart_region(bart_obj)
-            }
+            bart_obj <- safe_run_bart_region(bart_obj)
             auc_df <- bart_obj@result[["region"]][["auc"]]
             return(auc_df)
         },
@@ -544,6 +524,10 @@ setMethod("crossCT_test", "bartsc", function(
 
     for (i in pair_names) {
         auc <- object@data[[auc_title]][[i]]
+        if (is.null(auc) || inherits(auc, "try-error") || !is.data.frame(auc)) {
+            warning(paste0("Skipping pair '", i, "' due to missing or invalid AUC result."))
+            next
+        }
         auc$rank <- rank(auc$AUC) # get rank, greater number for greater auc
         auc$TF <- sapply(auc$ChIP_seq, function(x) {
             return(strsplit(x, "_")[[1]][1])
