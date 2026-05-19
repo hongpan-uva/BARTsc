@@ -1,3 +1,5 @@
+[TOC]
+
 * Analysis results and visualizations shown in this tutorial are just for demonstration. They may be different from those generated on your end.
 
 ## 1. Load Bart2 python module
@@ -57,9 +59,7 @@ head(label_lv1)
 > GGCTAGTGTACGCGCA.1 ACGAATCTCGGGCCAT.1
 >      "Monocyte"               "NK"
 
-## 
-
-## 4. Create BARTsc object and data normalization
+## 3. Create BARTsc object and data normalization
 
 The user then uses data prepared to create a BARTsc object which will be used for BARTsc analysis and downstream analysis.
 
@@ -77,7 +77,7 @@ bimodal_proj <- normalize_RNA(bimodal_proj)
 bimodal_proj <- normalize_ATAC(bimodal_proj)
 ```
 
-## 5. Feature extraction
+## 4. Feature extraction
 
 BARTsc input into BART two types of features:
 
@@ -135,6 +135,64 @@ bimodal_proj <- find_pairwise_dar(
     max.cells.per.ident = Inf
 )
 ```
+
+## 5. Using customized feature lists (Optional)
+
+If you already have marker genes, pairwise DEGs, marker peaks, and pairwise DARs from your own pipeline, you can bypass BARTsc's built-in feature extraction and supply your own lists directly.
+
+### Prepare custom lists
+
+Four named lists are required. Names for gene lists must match cell types in `cell_types_used`; names for pairwise lists must be ordered pairs in `"cell_type_1::cell_type_2"` format.
+
+```R
+my_signature_genes <- list(
+    B = c("MS4A1", "CD79A", "CD79B", "PAX5"),
+    T = c("CD3D", "CD3E", "IL7R", "TRAC"),
+    NK = c("NKG7", "GNLY", "KLRD1", "GZMB"),
+    Monocyte = c("CD14", "LYZ", "S100A9", "FCGR3A"),
+    DC = c("FCER1A", "CLEC10A", "IRF8", "CST3")
+)
+
+my_pairwise_DEG <- list(
+    "B::T" = c("MS4A1", "CD79A", "PAX5"),
+    "T::B" = c("CD3D", "CD3E", "TRAC"),
+    # ... all other ordered pairs
+)
+
+# signature_peaks and pairwise_DAR are lists of BED-like data frames
+my_signature_peaks <- list(...)
+my_pairwise_DAR <- list(...)
+```
+
+### Load lists into BARTsc
+
+```R
+bimodal_proj <- bartsc(
+    name = "pbmc", genome = "hg38",
+    cell_types_used = c("B", "T", "NK", "Monocyte", "DC"),
+    label = label_lv1,
+    active_mod = "bimodal"
+)
+
+bimodal_proj <- set_custom_features(
+    bimodal_proj,
+    signature_genes = my_signature_genes,
+    pairwise_DEG = my_pairwise_DEG,
+    signature_peaks = my_signature_peaks,
+    pairwise_DAR = my_pairwise_DAR,
+    validate = TRUE
+)
+```
+
+`validate = TRUE` checks that list names match the cell types and pair names expected by the object. Warnings are issued for missing or extra entries, but the assignment proceeds.
+
+### Notes
+
+- Gene symbols must match BART2's annotation (HGNC for hg38, MGI for mm10). Unrecognized symbols are silently ignored during RP matrix construction.
+- Small gene lists (< 5 genes) may produce unstable adaptive lasso models. BARTsc automatically falls back to a null AUC = 0.5 result if the model fails.
+- Empty lists are not forbidden: a cell type with zero markers receives a null result and the pipeline continues.
+
+After loading custom lists, proceed directly to [cell type signature analysis](#7-cell-type-signature-analysis).
 
 ## 6. Cell type signature analysis
 

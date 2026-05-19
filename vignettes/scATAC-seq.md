@@ -1,3 +1,7 @@
+[TOC]
+
+
+
 * Analysis results and visualizations shown in this tutorial are just for demonstration. They may be different from those generated on your end.
 
 ## 1. Load Bart2 python module
@@ -135,7 +139,47 @@ str(ATAC_proj@data$pairwise_DAR, 1)
 >
 > ...
 
-## 5. Cell type signature analysis
+## 5. Using customized feature lists (Optional)
+
+If you already have marker peaks, and pairwise DARs from your own pipeline, you can bypass BARTsc's built-in feature extraction and supply your own lists directly.
+
+### Prepare custom lists
+
+Four named lists are required. Names for gene lists must match cell types in `cell_types_used`; names for pairwise lists must be ordered pairs in `"cell_type_1::cell_type_2"` format.
+
+```R
+# signature_peaks and pairwise_DAR are lists of BED-like data frames
+my_signature_peaks <- list(...)
+my_pairwise_DAR <- list(...)
+```
+
+### Load lists into BARTsc
+
+```R
+bimodal_proj <- bartsc(
+    name = "pbmc", genome = "hg38",
+    cell_types_used = c("B", "T", "NK", "Monocyte", "DC"),
+    label = label_lv1,
+    active_mod = "ATAC"
+)
+
+bimodal_proj <- set_custom_features(
+    bimodal_proj,
+    signature_peaks = my_signature_peaks,
+    pairwise_DAR = my_pairwise_DAR,
+    validate = TRUE
+)
+```
+
+`validate = TRUE` checks that list names match the cell types and pair names expected by the object. Warnings are issued for missing or extra entries, but the assignment proceeds.
+
+### Notes
+
+- Empty lists are not forbidden: a cell type with zero markers receives a null result and the pipeline continues.
+
+After loading custom lists, proceed directly to [cell type signature analysis](#7-cell-type-signature-analysis).
+
+## 6. Cell type signature analysis
 
 Cell type signature analysis uses signature features identified in the [feature extraction](#Feature extraction) section to infer transcription regulators that are more likely to contribute to cell type signature expression.
 
@@ -176,7 +220,7 @@ head(results_list[["B"]])
 > 5                    6.572840e-05
 > 6                    1.627758e-04
 
-## 6. Cross-cell-type analysis
+## 7. Cross-cell-type analysis
 
 Cross-cell-type analysis uses pairwise differentially expressed features identified in the  [feature extraction](#Feature extraction) section to quantify the relative activity of a given transcription regulator across different cell types. For each transcription regulator in database, BARTsc output a deviation ratio matrix demonstrating whether and to what extent the given transcription regulator is more active between a pair of cell types. Corresponding p values are calculated using Wilcoxon signed-rank test. 
 
@@ -222,7 +266,7 @@ deviation_heatmap(ATAC_proj, mod = "ATAC", tf = "BCL6", tile_fontsize = 6)
 
 <img src="./scATAC-seq.assets/BCL6_heatmap.png" alt="BCL6_heatmap" style="zoom:25%;" />
 
-## 7. Identify cell type key regulators
+## 8. Identify cell type key regulators
 
 BARTsc identifies key regulators for a given cell types by comprehensively considering three factors: 1) Contribution to signature expression, 2) relative activity across all the cell types and 3) the uniqueness of a given transcription regulator. These three factors are quantified by signature score, MDR (mean deviation ratio) and dMDR (differential MDR) respectively. Final rank is determined by the mean rank of above indices. Final pvalues are calculated based on Irvin-Hall distribution. 
 

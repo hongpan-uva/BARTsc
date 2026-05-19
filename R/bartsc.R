@@ -42,6 +42,9 @@ setClass("bartsc",
 #' @param ATAC_norm_matrix  A peak by cell normalized chromatin
 #' accessibility matrix. Must be a `dgCMatrix` object.
 #' @param peaks A dataframe of input peaks.
+#' @param active_mod Active modality. One of "RNA", "ATAC", or "bimodal".
+#'   Required when constructing an object without count matrices (e.g. for
+#'   custom feature analysis). If NULL, inferred from provided matrices.
 #' @param gene_mode_param A list of parameters for gene mode.
 #' @param region_mode_param A list of parameters list for region mode.
 #' @param bimodal_mode_param A list of parameters list for bimodal mode.
@@ -54,6 +57,7 @@ bartsc <- function(name, genome, label, cell_types_used = NULL,
                    RNA_cnt_matrix = NULL, RNA_norm_matrix = NULL,
                    ATAC_cnt_matrix = NULL, ATAC_norm_matrix = NULL,
                    peaks = NULL,
+                   active_mod = NULL,
                    gene_mode_param = list(binsize = 1000),
                    region_mode_param = list(
                        binsize = 50, scorecol = 5
@@ -71,7 +75,6 @@ bartsc <- function(name, genome, label, cell_types_used = NULL,
         stop("count matrix or normalized matrix of ATAC-seq must be input with peaks")
     }
 
-    active_mod <- NULL
     rna_input <- FALSE
     atac_input <- FALSE
 
@@ -132,15 +135,22 @@ bartsc <- function(name, genome, label, cell_types_used = NULL,
     object@param[["bimodal_mode_param"]] <- bimodal_mode_param
 
     # set default active modality
-    if (rna_input == TRUE && atac_input == TRUE) {
-        active_mod <- "bimodal"
-    } else if (rna_input == TRUE) {
-        active_mod <- "RNA"
-    } else if (atac_input == TRUE) {
-        active_mod <- "ATAC"
+    if (!is.null(active_mod)) {
+        if (!(active_mod %in% c("RNA", "ATAC", "bimodal"))) {
+            stop('active_mod must be one of "RNA", "ATAC", or "bimodal"')
+        }
+        object@meta$active_mod <- active_mod
+    } else {
+        if (rna_input == TRUE && atac_input == TRUE) {
+            object@meta$active_mod <- "bimodal"
+        } else if (rna_input == TRUE) {
+            object@meta$active_mod <- "RNA"
+        } else if (atac_input == TRUE) {
+            object@meta$active_mod <- "ATAC"
+        } else {
+            stop('active_mod must be specified when no count matrices are provided')
+        }
     }
-
-    object@meta$active_mod <- active_mod
 
     return(object)
 }
