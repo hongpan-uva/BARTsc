@@ -1,4 +1,22 @@
-[TOC]
+
+
+## Table of content
+
+[1. Load Bart2 python module](#1. Load Bart2 python module)
+
+[2. Prepare input data](#2. Prepare input data)
+
+[3. Create BARTsc object and data normalization](#3. Create BARTsc object and data normalization)
+
+[4. Feature extraction](#4. Feature extraction)
+
+[5. Using customized feature lists (Optional)](#5. Using customized feature lists (Optional))
+
+[6. Cell type signature analysis](#6. Cell type signature analysis)
+
+[7. Cross-cell-type analysis](#7. Cross-cell-type analysis)
+
+[8. Identify cell type key regulators](#8. Identify cell type key regulators)
 
 
 

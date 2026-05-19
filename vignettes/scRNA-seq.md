@@ -1,4 +1,22 @@
-[TOC]
+## Table of content
+
+[1. Load Bart2 python module](#1. Load Bart2 python module)
+
+[2. Prepare input data](#2. Prepare input data)
+
+[3. Create BARTsc object and data normalization](#3. Create BARTsc object and data normalization)
+
+[4. Feature extraction](#4. Feature extraction)
+
+[5. Using customized feature lists (Optional)](#5. Using customized feature lists (Optional))
+
+[6. Cell type signature analysis](#6. Cell type signature analysis)
+
+[7. Cross-cell-type analysis](#7. Cross-cell-type analysis)
+
+[8. Identify cell type key regulators](#8. Identify cell type key regulators)
+
+
 
 * Analysis results and visualizations shown in this tutorial are just for demonstration. They may be different from those generated on your end.
 
@@ -188,7 +206,7 @@ After loading custom lists, proceed directly to [cell type signature analysis](#
 
 ## 6. Cell type signature analysis
 
-Cell type signature analysis uses signature features identified in the [feature extraction](#Feature extraction) section to infer transcription regulators that are more likely to contribute to cell type signature expression.
+Cell type signature analysis uses signature features identified in the [feature extraction](#4. Feature extraction) section to infer transcription regulators that are more likely to contribute to cell type signature expression.
 
 ### Run analysis
 
@@ -229,7 +247,7 @@ head(results_list[["B"]])
 
 ## 7. Cross-cell-type analysis
 
-Cross-cell-type analysis uses pairwise differentially expressed features identified in the  [feature extraction](#Feature extraction) section to quantify the relative activity of a given transcription regulator across different cell types. For each transcription regulator in database, BARTsc output a deviation ratio matrix demonstrating whether and to what extent the given transcription regulator is more active between a pair of cell types. Corresponding p values are calculated using Wilcoxon signed-rank test. 
+Cross-cell-type analysis uses pairwise differentially expressed features identified in the [feature extraction](#4. Feature extraction) section to quantify the relative activity of a given transcription regulator across different cell types. For each transcription regulator in database, BARTsc output a deviation ratio matrix demonstrating whether and to what extent the given transcription regulator is more active between a pair of cell types. Corresponding p values are calculated using Wilcoxon signed-rank test. 
 
 ### Run analysis
 
