@@ -74,7 +74,7 @@ bimodal_proj <- bartsc(
 )
 
 bimodal_proj <- normalize_RNA(bimodal_proj)
-ATAC_proj <- normalize_ATAC(ATAC_proj)
+bimodal_proj <- normalize_ATAC(bimodal_proj)
 ```
 
 ## 5. Feature extraction
@@ -88,8 +88,8 @@ Quickly identify these features using built-in functions.
 
 ```R
 # find cell type signature genes (DEGs)
-RNA_proj <- find_signature_genes(
-    RNA_proj,
+bimodal_proj <- find_signature_genes(
+    bimodal_proj,
     min.pct = 0.1,
     min.diff.pct = -Inf,
     log2fc.thr = 1,
@@ -100,8 +100,8 @@ RNA_proj <- find_signature_genes(
 )
 
 # find pairwise DEG
-RNA_proj <- find_pairwise_deg(
-    RNA_proj,
+bimodal_proj <- find_pairwise_deg(
+    bimodal_proj,
     min.pct = 0.1,
     min.diff.pct = -Inf,
     log2fc.thr = 1,
@@ -112,8 +112,8 @@ RNA_proj <- find_pairwise_deg(
 )
 
 # find cell type signature peaks (DARs)
-ATAC_proj <- find_signature_peaks(
-       ATAC_proj,
+bimodal_proj <- find_signature_peaks(
+       bimodal_proj,
        min.pct = 0.1,
        min.diff.pct = -Inf,
        log2fc.thr = 0.25,
@@ -124,8 +124,8 @@ ATAC_proj <- find_signature_peaks(
      )
 
 # find pairwise DAR
-ATAC_proj <- find_pairwise_dar(
-    ATAC_proj,
+bimodal_proj <- find_pairwise_dar(
+    bimodal_proj,
     min.pct = 0.1,
     min.diff.pct = -Inf,
     log2fc.thr = 0.25,
