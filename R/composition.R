@@ -311,11 +311,6 @@ safe_run_bart_region <- function(object, reserve_interm = FALSE) {
 #'
 #' @noRd
 safe_run_bart_bimodal <- function(object, reserve_interm = FALSE) {
-    gene_empty <- is.null(object@data$input_genes) || length(object@data$input_genes) == 0
-    region_empty <- is.null(object@data$input_regions) || nrow(object@data$input_regions) == 0
-    if (gene_empty && region_empty) {
-        return(run_bart_bimodal(object, reserve_interm = reserve_interm, return_null = TRUE))
-    }
     out <- tryCatch(
         run_bart_bimodal(object, reserve_interm = reserve_interm),
         error = function(e) {
