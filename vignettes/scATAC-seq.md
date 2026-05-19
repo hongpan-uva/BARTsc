@@ -2,21 +2,21 @@
 
 ## Table of content
 
-[1. Load Bart2 python module](#1. Load Bart2 python module)
+[1. Load Bart2 python module](#1-load-bart2-python-module)
 
-[2. Prepare input data](#2. Prepare input data)
+[2. Prepare input data](#2-prepare-input-data)
 
-[3. Create BARTsc object and data normalization](#3. Create BARTsc object and data normalization)
+[3. Create BARTsc object and data normalization](#3-create-bartsc-object-and-data-normalization)
 
-[4. Feature extraction](#4. Feature extraction)
+[4. Feature extraction](#4-feature-extraction)
 
-[5. Using customized feature lists (Optional)](#5. Using customized feature lists (Optional))
+[5. Using customized feature lists (Optional)](#5-using-customized-feature-lists-optional)
 
-[6. Cell type signature analysis](#6. Cell type signature analysis)
+[6. Cell type signature analysis](#6-cell-type-signature-analysis)
 
-[7. Cross-cell-type analysis](#7. Cross-cell-type analysis)
+[7. Cross-cell-type analysis](#7-cross-cell-type-analysis)
 
-[8. Identify cell type key regulators](#8. Identify cell type key regulators)
+[8. Identify cell type key regulators](#8-identify-cell-type-key-regulators)
 
 
 
@@ -195,11 +195,11 @@ bimodal_proj <- set_custom_features(
 
 - Empty lists are not forbidden: a cell type with zero markers receives a null result and the pipeline continues.
 
-After loading custom lists, proceed directly to [cell type signature analysis](#7-cell-type-signature-analysis).
+After loading custom lists, proceed directly to [cell type signature analysis](#6-cell-type-signature-analysis).
 
 ## 6. Cell type signature analysis
 
-Cell type signature analysis uses signature features identified in the [feature extraction](#Feature extraction) section to infer transcription regulators that are more likely to contribute to cell type signature expression.
+Cell type signature analysis uses signature features identified in the [feature extraction](#4-feature-extraction) section to infer transcription regulators that are more likely to contribute to cell type signature expression.
 
 ### Run analysis
 
@@ -240,7 +240,7 @@ head(results_list[["B"]])
 
 ## 7. Cross-cell-type analysis
 
-Cross-cell-type analysis uses pairwise differentially expressed features identified in the  [feature extraction](#Feature extraction) section to quantify the relative activity of a given transcription regulator across different cell types. For each transcription regulator in database, BARTsc output a deviation ratio matrix demonstrating whether and to what extent the given transcription regulator is more active between a pair of cell types. Corresponding p values are calculated using Wilcoxon signed-rank test. 
+Cross-cell-type analysis uses pairwise differentially expressed features identified in the [feature extraction](#4-feature-extraction) section to quantify the relative activity of a given transcription regulator across different cell types. For each transcription regulator in database, BARTsc output a deviation ratio matrix demonstrating whether and to what extent the given transcription regulator is more active between a pair of cell types. Corresponding p values are calculated using Wilcoxon signed-rank test. 
 
 ### Run analysis
 
