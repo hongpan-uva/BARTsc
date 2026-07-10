@@ -14,9 +14,10 @@ bartsc(
   ATAC_cnt_matrix = NULL,
   ATAC_norm_matrix = NULL,
   peaks = NULL,
+  active_mod = NULL,
   gene_mode_param = list(binsize = 1000),
   region_mode_param = list(binsize = 50, scorecol = 5),
-  bimodal_mode_param = list(binsize = 50)
+  bimodal_mode_param = list(binsize = 50, weights = c(1, 1))
 )
 }
 \arguments{
@@ -42,11 +43,18 @@ accessibility matrix. Must be a \code{dgCMatrix} object.}
 
 \item{peaks}{A dataframe of input peaks.}
 
+\item{active_mod}{Active modality. One of "RNA", "ATAC", or "bimodal".
+Required when constructing an object without count matrices (e.g. for
+custom feature analysis). If NULL, inferred from provided matrices.}
+
 \item{gene_mode_param}{A list of parameters for gene mode.}
 
 \item{region_mode_param}{A list of parameters list for region mode.}
 
-\item{bimodal_mode_param}{A list of parameters list for bimodal mode.}
+\item{bimodal_mode_param}{A list of parameters for bimodal mode. Currently
+supports \code{binsize} and \code{weights}. \code{weights} must be a positive numeric
+vector of length 2 giving the relative weight of RNA and ATAC ranks;
+it is normalized internally to sum to 1. Default is \code{c(1, 1)}.}
 }
 \value{
 a bartsc object

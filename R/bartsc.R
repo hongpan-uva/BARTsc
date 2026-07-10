@@ -47,7 +47,10 @@ setClass("bartsc",
 #'   custom feature analysis). If NULL, inferred from provided matrices.
 #' @param gene_mode_param A list of parameters for gene mode.
 #' @param region_mode_param A list of parameters list for region mode.
-#' @param bimodal_mode_param A list of parameters list for bimodal mode.
+#' @param bimodal_mode_param A list of parameters for bimodal mode. Currently
+#'   supports `binsize` and `weights`. `weights` must be a positive numeric
+#'   vector of length 2 giving the relative weight of RNA and ATAC ranks;
+#'   it is normalized internally to sum to 1. Default is `c(1, 1)`.
 #'
 #' @return a bartsc object
 #'
@@ -62,7 +65,7 @@ bartsc <- function(name, genome, label, cell_types_used = NULL,
                    region_mode_param = list(
                        binsize = 50, scorecol = 5
                    ),
-                   bimodal_mode_param = list(binsize = 50)) {
+                   bimodal_mode_param = list(binsize = 50, weights = c(1, 1))) {
     # input validation
     stopifnot(exprs = {
         !missing(name)

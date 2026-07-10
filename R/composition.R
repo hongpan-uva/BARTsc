@@ -102,6 +102,10 @@ run_bart_region <- function(object, name, genome, region_list = NULL,
 #' @param region_list a dataframe that follows a BED6 format, check the
 #' internal data B_cell_region as an example
 #' @param gene_mode_param a list of costumized arguments for gene mode
+#' @param bimodal_mode_param a list of arguments for bimodal mode. Currently
+#'   supports `binsize` and `weights`. `weights` must be a positive numeric
+#'   vector of length 2 giving the relative weight of RNA and ATAC ranks;
+#'   it is normalized internally to sum to 1. Default is `c(1, 1)`.
 #'
 #' @return A bart object
 #'
@@ -117,7 +121,7 @@ run_bart_bimodal <- function(
         binsize = 50, scorecol = 5
     ),
     bimodal_mode_param = list(
-        binsize = 50
+        binsize = 50, weights = c(1, 1)
     ),
     reserve_interm = FALSE, return_null = FALSE) {
     DFLT_INT_NUM <- 1000 # default integration number
@@ -202,7 +206,8 @@ run_bart_bimodal <- function(
             integ_num <- DFLT_INT_NUM
         }
 
-        object <- combineModsByTopRank(object, n_valid = integ_num, method = "geom.mean")
+        weights <- object@param[["bimodal_mode_param"]][["weights"]]
+        object <- combineModsByTopRank(object, n_valid = integ_num, method = "geom.mean", weights = weights)
         # object <- combineModsBySign(object)
         # object <- combineModsByProduct(object, ATAC_weight = 1)
         # object <- refineRNAWithATAC(object)

@@ -31,6 +31,10 @@ setClass("bart",
 #' @param region_data a dataframe that follows a BED6 format, check the internal data B_cell_region as an example
 #' @param gene_mode_param a list of costumized arguments for gene mode
 #' @param region_mode_param a list of costumized arguments for region mode
+#' @param bimodal_mode_param a list of arguments for bimodal mode. Currently
+#'   supports `binsize` and `weights`. `weights` must be a positive numeric
+#'   vector of length 2 giving the relative weight of RNA and ATAC ranks;
+#'   it is normalized internally to sum to 1. Default is `c(1, 1)`.
 #'
 #' @return A bart object
 #'
@@ -42,7 +46,7 @@ bart <- function(name, genome, gene_data, region_data,
                      binsize = 50, scorecol = 5
                  ),
                  bimodal_mode_param = list(
-                     binsize = 50
+                     binsize = 50, weights = c(1, 1)
                  )) {
     # to do: separate generateArgs from helper as addArgs()
     bart_obj <- new("bart")

@@ -158,19 +158,31 @@ setMethod("combineModsByRank", "bart", function(object) {
 
 #' combine the udhs profiles of two modalities based on rank aggregation
 #' @param object a bart object
+#' @param n_valid number of top ranks to consider
+#' @param method aggregation method
+#' @param weights a positive numeric vector of length 2 giving the relative
+#'   weight of RNA and ATAC ranks. Defaults to equal weights. Normalized
+#'   internally to sum to 1.
 #'
 #' @noRd
-setGeneric("combineModsByTopRank", function(object, n_valid, method = "geom.mean") standardGeneric("combineModsByTopRank"))
+setGeneric("combineModsByTopRank", function(object, n_valid, method = "geom.mean", weights = NULL) standardGeneric("combineModsByTopRank"))
 
-setMethod("combineModsByTopRank", "bart", function(object, n_valid, method = "geom.mean") {
+setMethod("combineModsByTopRank", "bart", function(object, n_valid, method = "geom.mean", weights = NULL) {
     if (!is.numeric(n_valid)) {
         warning("Input n_valid is not a numeric")
+    }
+
+    if (is.null(weights)) {
+        weights <- object@param[["bimodal_mode_param"]][["weights"]]
+        if (is.null(weights)) {
+            weights <- c(1, 1)
+        }
     }
 
     profile_1 <- unlist(object@intermediate[["Marge_based"]][["predicted_enhancers"]])
     profile_2 <- unlist(object@intermediate[["region_based"]][["overlapped_enhancers"]])
 
-    aggr_value <- .aggregate_rank(profile_1, profile_2, n_valid, method)
+    aggr_value <- .aggregate_rank(profile_1, profile_2, n_valid, method, weights)
 
     # use the metric for aggregated ranking as 'counting'
     counting <- as.list(-aggr_value)
@@ -188,12 +200,23 @@ setMethod("combineModsByTopRank", "bart", function(object, n_valid, method = "ge
 })
 
 #' Aggregate two rank lists
-#' 
-#' @param vector_1 a numeric vector, names are entry ids
-#' @param vector_2 a numeric vector, names are entry ids
+#'
+#' @param vector_1 a numeric vector, names are entry ids (RNA)
+#' @param vector_2 a numeric vector, names are entry ids (ATAC)
 #' @param n_valid number of top ranks to consider
 #' @param method aggregation method
-.aggregate_rank <- function(vector_1, vector_2, n_valid, method) {
+#' @param weights a positive numeric vector of length 2 giving the relative
+#'   weight of RNA and ATAC ranks. Normalized internally to sum to 1.
+.aggregate_rank <- function(vector_1, vector_2, n_valid, method, weights = c(1, 1)) {
+    weights <- as.numeric(weights)
+    if (length(weights) != 2) {
+        stop("'weights' must be a numeric vector of length 2")
+    }
+    if (any(weights <= 0) || any(is.na(weights))) {
+        stop("'weights' must be positive and non-missing")
+    }
+    weights <- weights / sum(weights)
+
     vector_1 <- vector_1[order(vector_1, decreasing = TRUE)]
     vector_2 <- vector_2[order(vector_2, decreasing = TRUE)]
 
@@ -211,18 +234,18 @@ setMethod("combineModsByTopRank", "bart", function(object, n_valid, method = "ge
 
     if (method == "geom.mean") {
         geom_mean_vec <- apply(rank_df, 1, function(x) {
-            return(exp(mean(log(x))))
+            return(exp(sum(log(x) * weights)))
         })
         return(geom_mean_vec)
     } else if (method == "MRR") {
         MRR_vec <- apply(rank_df, 1, function(x) {
-            MRR <- ((1 / x[1]) + (1 / x[2])) / 2
+            MRR <- sum(weights / x)
             return(1 / MRR)
         })
         return(MRR_vec)
     } else if (method == "mean") {
         mean_vec <- apply(rank_df, 1, function(x) {
-            return(mean(x))
+            return(sum(x * weights))
         })
         return(mean_vec)
     }

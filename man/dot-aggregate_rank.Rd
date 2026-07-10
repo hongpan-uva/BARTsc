@@ -4,16 +4,19 @@
 \alias{.aggregate_rank}
 \title{Aggregate two rank lists}
 \usage{
-.aggregate_rank(vector_1, vector_2, n_valid, method)
+.aggregate_rank(vector_1, vector_2, n_valid, method, weights = c(1, 1))
 }
 \arguments{
-\item{vector_1}{a numeric vector, names are entry ids}
+\item{vector_1}{a numeric vector, names are entry ids (RNA)}
 
-\item{vector_2}{a numeric vector, names are entry ids}
+\item{vector_2}{a numeric vector, names are entry ids (ATAC)}
 
 \item{n_valid}{number of top ranks to consider}
 
 \item{method}{aggregation method}
+
+\item{weights}{a positive numeric vector of length 2 giving the relative
+weight of RNA and ATAC ranks. Normalized internally to sum to 1.}
 }
 \description{
 Aggregate two rank lists

@@ -12,7 +12,7 @@ run_bart_bimodal(
   region_list = NULL,
   gene_mode_param = list(binsize = 1000),
   region_mode_param = list(binsize = 50, scorecol = 5),
-  bimodal_mode_param = list(binsize = 50),
+  bimodal_mode_param = list(binsize = 50, weights = c(1, 1)),
   reserve_interm = FALSE,
   return_null = FALSE
 )
@@ -32,6 +32,11 @@ B_cell_gene as an example}
 internal data B_cell_region as an example}
 
 \item{gene_mode_param}{a list of costumized arguments for gene mode}
+
+\item{bimodal_mode_param}{a list of arguments for bimodal mode. Currently
+supports \code{binsize} and \code{weights}. \code{weights} must be a positive numeric
+vector of length 2 giving the relative weight of RNA and ATAC ranks;
+it is normalized internally to sum to 1. Default is \code{c(1, 1)}.}
 }
 \value{
 A bart object
