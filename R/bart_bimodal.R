@@ -160,9 +160,10 @@ setMethod("combineModsByRank", "bart", function(object) {
 #' @param object a bart object
 #' @param n_valid number of top ranks to consider
 #' @param method aggregation method
-#' @param weights a positive numeric vector of length 2 giving the relative
+#' @param weights a non-negative numeric vector of length 2 giving the relative
 #'   weight of RNA and ATAC ranks. Defaults to equal weights. Normalized
-#'   internally to sum to 1.
+#'   internally to sum to 1. A zero weight disables that modality in the rank
+#'   aggregation.
 #'
 #' @noRd
 setGeneric("combineModsByTopRank", function(object, n_valid, method = "geom.mean", weights = NULL) standardGeneric("combineModsByTopRank"))
@@ -205,15 +206,19 @@ setMethod("combineModsByTopRank", "bart", function(object, n_valid, method = "ge
 #' @param vector_2 a numeric vector, names are entry ids (ATAC)
 #' @param n_valid number of top ranks to consider
 #' @param method aggregation method
-#' @param weights a positive numeric vector of length 2 giving the relative
-#'   weight of RNA and ATAC ranks. Normalized internally to sum to 1.
+#' @param weights a non-negative numeric vector of length 2 giving the relative
+#'   weight of RNA and ATAC ranks. Normalized internally to sum to 1. A zero
+#'   weight disables that modality in the rank aggregation.
 .aggregate_rank <- function(vector_1, vector_2, n_valid, method, weights = c(1, 1)) {
     weights <- as.numeric(weights)
     if (length(weights) != 2) {
         stop("'weights' must be a numeric vector of length 2")
     }
-    if (any(weights <= 0) || any(is.na(weights))) {
-        stop("'weights' must be positive and non-missing")
+    if (any(weights < 0) || any(is.na(weights))) {
+        stop("'weights' must be non-negative and non-missing")
+    }
+    if (sum(weights) == 0) {
+        stop("'weights' cannot both be zero")
     }
     weights <- weights / sum(weights)
 

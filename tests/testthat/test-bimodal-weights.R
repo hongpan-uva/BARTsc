@@ -60,15 +60,30 @@ test_that(".aggregate_rank weighted arithmetic mean is correct", {
     expect_equal(as.numeric(res), expected, tolerance = 1e-10)
 })
 
+test_that(".aggregate_rank zero weights disable a modality", {
+    rna <- setNames(c(5, 4, 3, 2, 1), as.character(1:5))
+    atac <- setNames(c(1, 2, 3, 4, 5), as.character(1:5))
+
+    # ranks in UDHS-id order after capping at n_valid=3:
+    # RNA: 1, 2, 3, 4.5, 4.5; ATAC: 4.5, 4.5, 3, 2, 1
+    for (method in c("geom.mean", "MRR", "mean")) {
+        res_rna_only <- BARTsc:::.aggregate_rank(rna, atac, n_valid = 3, method = method, weights = c(1, 0))
+        expect_equal(as.numeric(res_rna_only), c(1, 2, 3, 4.5, 4.5), tolerance = 1e-10)
+
+        res_atac_only <- BARTsc:::.aggregate_rank(rna, atac, n_valid = 3, method = method, weights = c(0, 1))
+        expect_equal(as.numeric(res_atac_only), c(4.5, 4.5, 3, 2, 1), tolerance = 1e-10)
+    }
+})
+
 test_that(".aggregate_rank rejects invalid weights", {
     rna <- setNames(c(5, 4, 3, 2, 1), as.character(1:5))
     atac <- setNames(c(1, 2, 3, 4, 5), as.character(1:5))
 
     expect_error(BARTsc:::.aggregate_rank(rna, atac, n_valid = 3, method = "geom.mean", weights = c(1, -1)))
-    expect_error(BARTsc:::.aggregate_rank(rna, atac, n_valid = 3, method = "geom.mean", weights = c(1, 0)))
     expect_error(BARTsc:::.aggregate_rank(rna, atac, n_valid = 3, method = "geom.mean", weights = c(1)))
     expect_error(BARTsc:::.aggregate_rank(rna, atac, n_valid = 3, method = "geom.mean", weights = c(1, 1, 1)))
     expect_error(BARTsc:::.aggregate_rank(rna, atac, n_valid = 3, method = "geom.mean", weights = c(NA, 1)))
+    expect_error(BARTsc:::.aggregate_rank(rna, atac, n_valid = 3, method = "geom.mean", weights = c(0, 0)))
     expect_error(suppressWarnings(BARTsc:::.aggregate_rank(rna, atac, n_valid = 3, method = "geom.mean", weights = c("a", "b"))))
 })
 

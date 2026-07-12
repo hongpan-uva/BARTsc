@@ -103,9 +103,10 @@ run_bart_region <- function(object, name, genome, region_list = NULL,
 #' internal data B_cell_region as an example
 #' @param gene_mode_param a list of costumized arguments for gene mode
 #' @param bimodal_mode_param a list of arguments for bimodal mode. Currently
-#'   supports `binsize` and `weights`. `weights` must be a positive numeric
+#'   supports `binsize` and `weights`. `weights` must be a non-negative numeric
 #'   vector of length 2 giving the relative weight of RNA and ATAC ranks;
-#'   it is normalized internally to sum to 1. Default is `c(1, 1)`.
+#'   it is normalized internally to sum to 1. Default is `c(1, 1)`. A zero
+#'   weight disables that modality in the rank aggregation.
 #'
 #' @return A bart object
 #'

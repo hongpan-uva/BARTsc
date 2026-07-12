@@ -15,8 +15,9 @@
 
 \item{method}{aggregation method}
 
-\item{weights}{a positive numeric vector of length 2 giving the relative
-weight of RNA and ATAC ranks. Normalized internally to sum to 1.}
+\item{weights}{a non-negative numeric vector of length 2 giving the relative
+weight of RNA and ATAC ranks. Normalized internally to sum to 1. A zero
+weight disables that modality in the rank aggregation.}
 }
 \description{
 Aggregate two rank lists

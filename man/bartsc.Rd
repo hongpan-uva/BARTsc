@@ -52,9 +52,10 @@ custom feature analysis). If NULL, inferred from provided matrices.}
 \item{region_mode_param}{A list of parameters list for region mode.}
 
 \item{bimodal_mode_param}{A list of parameters for bimodal mode. Currently
-supports \code{binsize} and \code{weights}. \code{weights} must be a positive numeric
+supports \code{binsize} and \code{weights}. \code{weights} must be a non-negative numeric
 vector of length 2 giving the relative weight of RNA and ATAC ranks;
-it is normalized internally to sum to 1. Default is \code{c(1, 1)}.}
+it is normalized internally to sum to 1. Default is \code{c(1, 1)}. A zero
+weight disables that modality in the rank aggregation.}
 }
 \value{
 a bartsc object
